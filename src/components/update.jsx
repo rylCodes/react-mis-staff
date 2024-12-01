@@ -1,13 +1,30 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from "react";
 import { tokens } from "../theme";
-import { useTheme, TextField, MenuItem, Select, InputLabel, FormControl, Button, Grid } from '@mui/material';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import {
+  useTheme,
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  Button,
+  Grid,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import Header from "../components/Header";
+import { AuthContext } from "../context/AuthContext";
 
 const Update = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const navigate = useNavigate(); // Initialize the navigate function
+  const { authToken } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authToken) {
+      navigate("/");
+    }
+  }, [authToken, navigate]);
 
   const servicePrices = {
     "Gym Per session": 60,
@@ -16,21 +33,21 @@ const Update = () => {
     "Gym + Treadmill": 1200,
     "P.I Per Session": 120,
     "P.I Monthly": 1500,
-    "Zumba": 70,
-    "Dance": 30,
+    Zumba: 70,
+    Dance: 30,
     "Muay Thai": 250,
-    "Taekwondo": 50,
-    "Boxing": 60,
+    Taekwondo: 50,
+    Boxing: 60,
   };
 
   const [formData, setFormData] = useState({
-    fullName: '',
-    chosenService: '',
-    currentPlan: '',
-    newPlan: '',
-    reason: '',
-    effectiveDate: '',
-    additionalComments: ''
+    fullName: "",
+    chosenService: "",
+    currentPlan: "",
+    newPlan: "",
+    reason: "",
+    effectiveDate: "",
+    additionalComments: "",
   });
 
   const handleChange = (e) => {
@@ -51,25 +68,24 @@ const Update = () => {
     console.log(formData);
 
     // Redirect to payment form
-    navigate('/payment-form', { state: { formData } }); // Pass formData if needed
+    navigate("/payment-form", { state: { formData } }); // Pass formData if needed
   };
 
   return (
-    <div className=''>
+    <div className="">
       <Header title="Update" subtitle="Managing updates for the customer" />
-      <form 
-        onSubmit={handleSubmit} 
+      <form
+        onSubmit={handleSubmit}
         style={{
-          backgroundColor: colors.primary[400], 
-          padding: '50px', 
-          borderRadius: '8px', 
-          width: '100%', 
-          maxWidth: '900px',
-          margin: '0 auto'
+          backgroundColor: colors.primary[400],
+          padding: "50px",
+          borderRadius: "8px",
+          width: "100%",
+          maxWidth: "900px",
+          margin: "0 auto",
         }}
       >
         <Grid container spacing={3}>
-
           {/* Chosen Service */}
           <Grid item xs={12} sm={6}>
             <FormControl required fullWidth>
@@ -81,12 +97,14 @@ const Update = () => {
                 onChange={handleChange}
               >
                 {Object.keys(servicePrices).map((service) => (
-                  <MenuItem key={service} value={service}>{service}</MenuItem>
+                  <MenuItem key={service} value={service}>
+                    {service}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Grid>
-            
+
           {/* Full Name */}
           <Grid item xs={10} sm={4}>
             <TextField

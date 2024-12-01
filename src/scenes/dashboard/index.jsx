@@ -1,17 +1,39 @@
-import { Box, Typography, useTheme, TextField, Button, Snackbar, Alert, Card, CardContent, IconButton } from "@mui/material";
-import { useState } from "react";
+import {
+  Box,
+  Typography,
+  useTheme,
+  TextField,
+  Button,
+  Snackbar,
+  Alert,
+  Card,
+  CardContent,
+  IconButton,
+} from "@mui/material";
+import { useContext, useEffect, useState } from "react";
 import { tokens } from "../../theme";
-import FitnessCenterOutlinedIcon from '@mui/icons-material/FitnessCenterOutlined';
+import FitnessCenterOutlinedIcon from "@mui/icons-material/FitnessCenterOutlined";
 import InventoryOutlinedIcon from "@mui/icons-material/InventoryOutlined";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import Header from "../../components/Header";
 import StatBox from "../../components/StatBOx";
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+import { AuthContext } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
+  const { authToken } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authToken) {
+      navigate("/");
+    }
+  }, [authToken, navigate]);
 
   const [timeIn, setTimeIn] = useState("");
   const [timeOut, setTimeOut] = useState("");
@@ -51,7 +73,11 @@ const Dashboard = () => {
 
     setActiveInstructors([
       ...activeInstructors,
-      { name: `Instructor ${activeInstructors.length + 1}`, status: "active", employeeId: newEmpId }
+      {
+        name: `Instructor ${activeInstructors.length + 1}`,
+        status: "active",
+        employeeId: newEmpId,
+      },
     ]);
     setTimeIn("");
   };
@@ -74,7 +100,10 @@ const Dashboard = () => {
     setActiveInstructors(
       activeInstructors.map((instructor) =>
         instructor.name === name
-          ? { ...instructor, status: instructor.status === "active" ? "inactive" : "active" }
+          ? {
+              ...instructor,
+              status: instructor.status === "active" ? "inactive" : "active",
+            }
           : instructor
       )
     );
@@ -88,7 +117,12 @@ const Dashboard = () => {
       </Box>
 
       {/* GRID & CHARTS */}
-      <Box display="grid" gridTemplateColumns="repeat(12, 1fr)" gridAutoRows="140px" gap="20px">
+      <Box
+        display="grid"
+        gridTemplateColumns="repeat(12, 1fr)"
+        gridAutoRows="140px"
+        gap="20px"
+      >
         {/* ROW 1 */}
         <Box
           gridColumn="span 3"
@@ -102,7 +136,11 @@ const Dashboard = () => {
             subtitle="Equipment"
             progress="0.75"
             increase="+14%"
-            icon={<FitnessCenterOutlinedIcon sx={{ color: colors.greenAccent[600], fontSize: "26px" }} />}
+            icon={
+              <FitnessCenterOutlinedIcon
+                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+              />
+            }
           />
         </Box>
         <Box
@@ -117,7 +155,11 @@ const Dashboard = () => {
             subtitle="Products"
             progress="0.50"
             increase="+21%"
-            icon={<InventoryOutlinedIcon sx={{ color: colors.greenAccent[600], fontSize: "26px" }} />}
+            icon={
+              <InventoryOutlinedIcon
+                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+              />
+            }
           />
         </Box>
         <Box
@@ -132,7 +174,11 @@ const Dashboard = () => {
             subtitle="Customers"
             progress="0.30"
             increase="+5%"
-            icon={<PersonAddIcon sx={{ color: colors.greenAccent[600], fontSize: "26px" }} />}
+            icon={
+              <PersonAddIcon
+                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+              />
+            }
           />
         </Box>
 
@@ -146,7 +192,12 @@ const Dashboard = () => {
           <Typography variant="h5" fontWeight="600">
             Employee ID
           </Typography>
-          <Box display="flex" flexDirection="column" alignItems="center" mt="25px">
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            mt="25px"
+          >
             <TextField
               label="Enter the ID"
               variant="outlined"
@@ -154,8 +205,13 @@ const Dashboard = () => {
               onChange={(e) => setTimeIn(e.target.value)}
               fullWidth
             />
-            <Button variant="contained" color="primary" onClick={handleTimeIn} sx={{ mt: 2 }}>
-              Submit 
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleTimeIn}
+              sx={{ mt: 2 }}
+            >
+              Submit
             </Button>
           </Box>
         </Box>
@@ -169,7 +225,12 @@ const Dashboard = () => {
           <Typography variant="h5" fontWeight="600">
             Employee ID
           </Typography>
-          <Box display="flex" flexDirection="column" alignItems="center" mt="25px">
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            mt="25px"
+          >
             <TextField
               label="Enter the ID"
               variant="outlined"
@@ -177,8 +238,13 @@ const Dashboard = () => {
               onChange={(e) => setTimeOut(e.target.value)}
               fullWidth
             />
-            <Button variant="contained" color="secondary" onClick={handleTimeOut} sx={{ mt: 2 }}>
-              Submit 
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleTimeOut}
+              sx={{ mt: 2 }}
+            >
+              Submit
             </Button>
           </Box>
         </Box>
@@ -189,7 +255,7 @@ const Dashboard = () => {
           gridRow="span 2"
           backgroundColor={colors.primary[400]}
           p="30px"
-          sx={{ maxHeight: '400px', overflowY: 'scroll' }}
+          sx={{ maxHeight: "400px", overflowY: "scroll" }}
         >
           <Typography variant="h5" fontWeight="600">
             Active Instructors
@@ -210,7 +276,9 @@ const Dashboard = () => {
                 <CardContent>
                   <Typography variant="h6">{instructor.name}</Typography>
                   <Typography variant="body2" color="textSecondary">
-                    {instructor.status === "active" ? "Active Instructor" : "Inactive Instructor"}
+                    {instructor.status === "active"
+                      ? "Active Instructor"
+                      : "Inactive Instructor"}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Employee ID: {instructor.employeeId}
@@ -220,7 +288,11 @@ const Dashboard = () => {
                   onClick={() => toggleInstructorStatus(instructor.name)}
                   color={instructor.status === "active" ? "success" : "error"}
                 >
-                  {instructor.status === "active" ? <CheckCircleIcon /> : <CancelIcon />}
+                  {instructor.status === "active" ? (
+                    <CheckCircleIcon />
+                  ) : (
+                    <CancelIcon />
+                  )}
                 </IconButton>
               </Card>
             ))}

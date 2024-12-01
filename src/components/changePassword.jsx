@@ -1,18 +1,37 @@
-import React, { useState } from 'react';
-import { Container, TextField, Button, Typography,  Box, IconButton, InputAdornment } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { tokens } from '../theme';  // Assuming you have a theme file
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import React, { useContext, useEffect, useState } from "react";
+import {
+  Container,
+  TextField,
+  Button,
+  Typography,
+  Box,
+  IconButton,
+  InputAdornment,
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { tokens } from "../theme"; // Assuming you have a theme file
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const ChangePassword = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
-  const [password, setPassword] = useState('');
-  const [repeatPassword, setRepeatPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);  // State for toggling password visibility
-  const [showRepeatPassword, setShowRepeatPassword] = useState(false);  // State for toggling repeat password visibility
+  const { authToken } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authToken) {
+      navigate("/");
+    }
+  }, [authToken, navigate]);
+
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // State for toggling password visibility
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false); // State for toggling repeat password visibility
   const [error, setError] = useState(false);
 
   const handlePasswordChange = (event) => {
@@ -25,27 +44,27 @@ const ChangePassword = () => {
 
   const handleConfirm = () => {
     if (password === repeatPassword && /^[a-zA-Z0-9]{8,}$/.test(password)) {
-      alert('Password changed successfully!');
+      alert("Password changed successfully!");
     } else {
-      setError(true);  // Show error message if validation fails
+      setError(true); // Show error message if validation fails
     }
   };
 
   const handleClickShowPassword = () => {
-    setShowPassword((prevState) => !prevState);  // Toggle password visibility
+    setShowPassword((prevState) => !prevState); // Toggle password visibility
   };
 
   const handleClickShowRepeatPassword = () => {
-    setShowRepeatPassword((prevState) => !prevState);  // Toggle repeat password visibility
+    setShowRepeatPassword((prevState) => !prevState); // Toggle repeat password visibility
   };
 
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
       <Container
@@ -57,13 +76,15 @@ const ChangePassword = () => {
           boxShadow: 3,
         }}
       >
-        <Typography variant="h5" gutterBottom>Change Password</Typography>
-        
+        <Typography variant="h5" gutterBottom>
+          Change Password
+        </Typography>
+
         <TextField
           fullWidth
           margin="normal"
           label="New Password"
-          type={showPassword ? 'text' : 'password'}
+          type={showPassword ? "text" : "password"}
           value={password}
           onChange={handlePasswordChange}
           error={error && !password}
@@ -71,10 +92,7 @@ const ChangePassword = () => {
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton
-                  onClick={handleClickShowPassword}
-                  edge="end"
-                >
+                <IconButton onClick={handleClickShowPassword} edge="end">
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
@@ -86,18 +104,17 @@ const ChangePassword = () => {
           fullWidth
           margin="normal"
           label="Repeat Password"
-          type={showRepeatPassword ? 'text' : 'password'}
+          type={showRepeatPassword ? "text" : "password"}
           value={repeatPassword}
           onChange={handleRepeatPasswordChange}
           error={error && password !== repeatPassword}
-          helperText={error && password !== repeatPassword ? "Passwords do not match" : ""}
+          helperText={
+            error && password !== repeatPassword ? "Passwords do not match" : ""
+          }
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton
-                  onClick={handleClickShowRepeatPassword}
-                  edge="end"
-                >
+                <IconButton onClick={handleClickShowRepeatPassword} edge="end">
                   {showRepeatPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
@@ -114,7 +131,7 @@ const ChangePassword = () => {
             <li>cannot contain spaces or symbols</li>
           </ul>
         </Typography>
-        
+
         <Button
           variant="contained"
           color="primary"

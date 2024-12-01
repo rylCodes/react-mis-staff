@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from "react";
 import {
   Container,
   Grid,
@@ -13,53 +13,62 @@ import {
   Card,
   CardContent,
   IconButton,
-  useTheme 
-} from '@mui/material';
-import { Save } from '@mui/icons-material';
-import { Visibility, VisibilityOff } from '@mui/icons-material'; // Eye icons
+  useTheme,
+} from "@mui/material";
+import { Save } from "@mui/icons-material";
+import { Visibility, VisibilityOff } from "@mui/icons-material"; // Eye icons
 import Header from "../../components/Header";
 import { tokens } from "../../theme";
-
+import { AuthContext } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const AccountSettings = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
+  const { authToken } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [sex, setSex] = useState('');
-  const [address, setAddress] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [repeatPassword, setRepeatPassword] = useState('');
+  useEffect(() => {
+    if (!authToken) {
+      navigate("/");
+    }
+  }, [authToken, navigate]);
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [sex, setSex] = useState("");
+  const [address, setAddress] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
 
   const handleSave = () => {
     // Validate required fields
     if (!firstName || !lastName || !email || !contactNumber || !address) {
-      alert('Please fill in all required fields.');
+      alert("Please fill in all required fields.");
       return;
     }
 
     // Validate password fields if the user is changing the password
     if (showChangePassword) {
       if (!password || !newPassword || !repeatPassword) {
-        alert('Please fill in all password fields.');
+        alert("Please fill in all password fields.");
         return;
       }
       if (newPassword !== repeatPassword) {
-        alert('New password and repeat password must match.');
+        alert("New password and repeat password must match.");
         return;
       }
     }
 
     // If validation passes
-    alert('Settings have been saved successfully!');
-    console.log('Settings saved');
+    alert("Settings have been saved successfully!");
+    console.log("Settings saved");
   };
 
   const toggleChangePassword = () => {
@@ -71,11 +80,23 @@ const AccountSettings = () => {
   };
 
   return (
-    <Container sx={{  backgroundColor: colors.primary[400], padding: '20px', borderRadius: '8px' }}>
+    <Container
+      sx={{
+        backgroundColor: colors.primary[400],
+        padding: "20px",
+        borderRadius: "8px",
+      }}
+    >
       <Header title="Account Settings" subtitle="" />
-      
+
       {/* Change Information Section */}
-      <Card sx={{ marginBottom: 3, padding: 2,  backgroundColor: colors.primary[400] }}>
+      <Card
+        sx={{
+          marginBottom: 3,
+          padding: 2,
+          backgroundColor: colors.primary[400],
+        }}
+      >
         <CardContent>
           <Typography variant="h6" gutterBottom>
             Change Information
@@ -100,10 +121,7 @@ const AccountSettings = () => {
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Sex</InputLabel>
-                <Select
-                  value={sex}
-                  onChange={(e) => setSex(e.target.value)}
-                >
+                <Select value={sex} onChange={(e) => setSex(e.target.value)}>
                   <MenuItem value="Male">Male</MenuItem>
                   <MenuItem value="Female">Female</MenuItem>
                   <MenuItem value="Other">Other</MenuItem>
@@ -151,7 +169,13 @@ const AccountSettings = () => {
       </Box>
 
       {/* Change Password Section */}
-      <Card sx={{ marginBottom: 3, padding: 2, backgroundColor: colors.primary[400] }}>
+      <Card
+        sx={{
+          marginBottom: 3,
+          padding: 2,
+          backgroundColor: colors.primary[400],
+        }}
+      >
         <CardContent>
           <Typography variant="h6" gutterBottom>
             Change Password
@@ -162,7 +186,7 @@ const AccountSettings = () => {
             onClick={toggleChangePassword}
             sx={{ marginBottom: 2 }}
           >
-            {showChangePassword ? 'Cancel' : 'Change Password'}
+            {showChangePassword ? "Cancel" : "Change Password"}
           </Button>
 
           {showChangePassword && (
@@ -172,7 +196,7 @@ const AccountSettings = () => {
                 <TextField
                   fullWidth
                   label="Current Password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   InputProps={{
@@ -190,7 +214,7 @@ const AccountSettings = () => {
                 <TextField
                   fullWidth
                   label="New Password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   InputProps={{
@@ -208,7 +232,7 @@ const AccountSettings = () => {
                 <TextField
                   fullWidth
                   label="Repeat Password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={repeatPassword}
                   onChange={(e) => setRepeatPassword(e.target.value)}
                   InputProps={{

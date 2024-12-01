@@ -1,12 +1,32 @@
-import React from "react";
-import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableRow, Paper, Button, Divider, useTheme } from "@mui/material";
+import React, { useContext, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Paper,
+  Button,
+  Divider,
+  useTheme,
+} from "@mui/material";
 import { tokens } from "../theme";
 import { useNavigate } from "react-router-dom"; // For navigation
+import { AuthContext } from "../context/AuthContext";
 
 const PaymentReceipt = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const navigate = useNavigate(); // Hook for navigation
+  const { authToken } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authToken) {
+      navigate("/");
+    }
+  }, [authToken, navigate]);
 
   const memberName = "Stacey Sevilleigia";
   const paidDate = "September 9, 2024 - 5:55 PM";
@@ -47,7 +67,14 @@ const PaymentReceipt = () => {
           backgroundColor: "#ffffff",
         }}
       >
-        <Typography variant="h5" sx={{ fontWeight: "bold", marginBottom: "10px", color: colors.primary[500] }}>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: "bold",
+            marginBottom: "10px",
+            color: colors.primary[500],
+          }}
+        >
           Payment Receipt
         </Typography>
 
@@ -61,16 +88,29 @@ const PaymentReceipt = () => {
           </Typography>
         </Box>
 
-        <Typography variant="body2" sx={{ marginBottom: "10px", color: colors.primary[500] }}>
+        <Typography
+          variant="body2"
+          sx={{ marginBottom: "10px", color: colors.primary[500] }}
+        >
           {address}
         </Typography>
 
         <Divider sx={{ marginBottom: "10px" }} />
 
-        <Typography variant="body1" sx={{ fontWeight: "bold", marginBottom: "5px", color: colors.primary[500] }}>
+        <Typography
+          variant="body1"
+          sx={{
+            fontWeight: "bold",
+            marginBottom: "5px",
+            color: colors.primary[500],
+          }}
+        >
           Member: {memberName}
         </Typography>
-        <Typography variant="body2" sx={{ marginBottom: "10px", color: colors.primary[500] }}>
+        <Typography
+          variant="body2"
+          sx={{ marginBottom: "10px", color: colors.primary[500] }}
+        >
           Paid on: {paidDate}
         </Typography>
 
@@ -81,7 +121,10 @@ const PaymentReceipt = () => {
             <TableBody>
               <TableRow>
                 <TableCell sx={{ fontWeight: "bold" }}>Service Taken</TableCell>
-                <TableCell align="right" sx={{ fontWeight: "bold", color: colors.primary[500] }}>
+                <TableCell
+                  align="right"
+                  sx={{ fontWeight: "bold", color: colors.primary[500] }}
+                >
                   Valid Update
                 </TableCell>
               </TableRow>
@@ -92,10 +135,15 @@ const PaymentReceipt = () => {
                 </TableRow>
               ))}
               <TableRow>
-                <TableCell sx={{ fontWeight: "bold", borderTop: "2px solid black" }}>
+                <TableCell
+                  sx={{ fontWeight: "bold", borderTop: "2px solid black" }}
+                >
                   Total Amount
                 </TableCell>
-                <TableCell align="right" sx={{ fontWeight: "bold", borderTop: "2px solid black" }}>
+                <TableCell
+                  align="right"
+                  sx={{ fontWeight: "bold", borderTop: "2px solid black" }}
+                >
                   {totalAmount}
                 </TableCell>
               </TableRow>
@@ -111,10 +159,17 @@ const PaymentReceipt = () => {
             fontSize: "0.9em",
           }}
         >
-          We sincerely appreciate your promptness regarding all payments from your side.
+          We sincerely appreciate your promptness regarding all payments from
+          your side.
         </Typography>
 
-        <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: "20px" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "20px",
+          }}
+        >
           <Button
             variant="contained"
             color="error"
@@ -122,7 +177,6 @@ const PaymentReceipt = () => {
             sx={{
               padding: "5px 30px",
               fontWeight: "bold",
-              
             }}
           >
             Print

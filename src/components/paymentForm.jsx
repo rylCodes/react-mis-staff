@@ -1,12 +1,20 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { Box, Typography, Grid, Button, Paper, useTheme } from "@mui/material";
 import { tokens } from "../theme";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const PaymentForm = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const { authToken } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authToken) {
+      navigate("/");
+    }
+  }, [authToken, navigate]);
 
   const handlePayment = () => {
     const paymentDetails = {

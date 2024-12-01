@@ -1,22 +1,30 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Button, Box, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../theme";
 import { mockDataCustomer } from "../data/mockData";
 import Header from "../components/Header";
-import { useNavigate } from "react-router-dom";  // Import useNavigate for routing
+import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
+import { AuthContext } from "../context/AuthContext";
 
 const Payment = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const navigate = useNavigate();  // Initialize the useNavigate hook
+  const { authToken } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authToken) {
+      navigate("/");
+    }
+  }, [authToken, navigate]);
 
   const [customer] = useState(mockDataCustomer);
 
   // Modify handleEdit function to navigate to the payment form
   const handleEdit = (id) => {
     console.log("Initiating payment for customer with ID:", id);
-    navigate(`/payment-form`);  // Navigate to the Payment Form page, passing the customer ID
+    navigate(`/payment-form`); // Navigate to the Payment Form page, passing the customer ID
   };
 
   const columns = [
@@ -36,7 +44,7 @@ const Payment = () => {
           <Button
             variant="outlined"
             color={colors.greenAccent[500]}
-            onClick={() => handleEdit(params.row.id)}  // Handle payment button click
+            onClick={() => handleEdit(params.row.id)} // Handle payment button click
           >
             Payment
           </Button>

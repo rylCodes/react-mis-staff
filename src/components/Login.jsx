@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Grid,
   Paper,
@@ -14,37 +14,60 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
+import { useAlert } from "../context/AlertContext";
 
 const Login = () => {
-
-  const [data, setData] = useState([]);
-
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  const navigate = useNavigate(); // Hook for navigation
+  const { authToken, login } = useContext(AuthContext);
+  const showAlert = useAlert();
+  const navigate = useNavigate();
+
+  const handleSuccess = (user) => {
+    showAlert(`Welcome back, ${user}!`, "success");
+  };
+
+  const handleError = () => {
+    showAlert("Something went wrong!", "error");
+  };
 
   useEffect(() => {
-    fetch("http://localhost:8081/loginadmin")
-      .then(res => res.json())
-      .then(data => setData(data))
-      .catch(err => console.log(err));
-  }, []);
+    if (authToken) {
+      navigate("/dashboard");
+    }
+  }, [authToken, navigate]);
 
   // Handle Login
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const user = data.find(
-      (user) => user.username === username && user.password === password
-    );
+    try {
+      const response = await axios.post("http://localhost:8000/api/login", {
+        email,
+        password,
+        remember_me: rememberMe ? 1 : 0, // Pass rememberMe as a boolean flag
+      });
 
-    if (user) {
+      const { data } = response;
+      // Handle successful login, save the token and redirect
+      login(data.meta.access_token); // Save token via context
+      console.log("Login successful:", data);
       navigate("/dashboard");
-    } else {
-      setError("Invalid credentials");
+      handleSuccess(data.data.fullname);
+    } catch (err) {
+      // Handle errors
+      if (err.response && err.response.data && err.response.data.error) {
+        setError(err.response.data.error.message || "Invalid credentials");
+      } else {
+        setError("An error occurred. Please try again.");
+      }
+      console.error("Login failed:", err);
+      handleError();
     }
   };
 
@@ -53,7 +76,12 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
-  const paperStyle = { padding: 20, height: "60vh", width: 380, margin: "150px auto" };
+  const paperStyle = {
+    padding: 20,
+    height: "60vh",
+    width: 380,
+    margin: "150px auto",
+  };
   const avatarStyle = { backgroundColor: "#1bbd7e" };
   const btnStyle = { margin: "8px 0" };
 
@@ -66,64 +94,69 @@ const Login = () => {
           </Avatar>
           <h2>Sign In</h2>
         </Grid>
-        <TextField
-          label="Username"
-          placeholder="Enter username"
-          fullWidth
-          required
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <div style={{ position: "relative" }}>
+        <form onSubmit={handleSubmit}>
           <TextField
-            label="Password"
-            placeholder="Enter password"
-            type={showPassword ? "text" : "password"}
+            label="Email"
+            placeholder="Enter email"
             fullWidth
             required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
-          <Button
-            onClick={handlePasswordToggle}
-            style={{
-              position: "absolute",
-              right: 10,
-              top: "50%",
-              transform: "translateY(-50%)",
-            }}
-            aria-label={showPassword ? "Hide password" : "Show password"}
-          >
-            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-          </Button>
-        </div>
-        <FormControlLabel
-          control={
-            <Checkbox
-              name="rememberMe"
-              color="primary"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
+          <div style={{ position: "relative" }}>
+            <TextField
+              label="Password"
+              placeholder="Enter password"
+              type={showPassword ? "text" : "password"}
+              fullWidth
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
-          }
-          label="Remember me"
-        />
-        <Typography>
-          <Link href="/forgot-password">Forgot password?</Link>
-        </Typography>
-        {error && <Typography color="error">{error}</Typography>}
-        <Button
-          type="submit"
-          color="primary"
-          variant="contained"
-          style={btnStyle}
-          fullWidth
-          onClick={handleSubmit}
-        >
-          Sign In
-        </Button>
+            <Button
+              onClick={handlePasswordToggle}
+              style={{
+                position: "absolute",
+                right: 10,
+                top: "50%",
+                transform: "translateY(-50%)",
+              }}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+            </Button>
+          </div>
+          <FormControlLabel
+            control={
+              <Checkbox
+                name="rememberMe"
+                color="primary"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+            }
+            label="Remember me"
+          />
+          <Typography>
+            <Link href="/forgot-password">Forgot password?</Link>
+          </Typography>
+          {error && <Typography color="error">{error}</Typography>}
+          <Button
+            type="submit"
+            color="primary"
+            variant="contained"
+            style={btnStyle}
+            fullWidth
+          >
+            Sign In
+          </Button>
+        </form>
         {/* Link to Sign Up Page */}
-       
+        <Typography>
+          <Link href="/signup" style={{ textDecoration: "none" }}>
+            Don't have an account? Sign Up
+          </Link>
+        </Typography>
       </Paper>
     </Grid>
   );

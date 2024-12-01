@@ -1,14 +1,23 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Grid, Box, Typography, Button, Stack, useTheme } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
+import { AuthContext } from "../../context/AuthContext";
 
 const Products = () => {
-    const theme = useTheme();
-    const colors = tokens(theme.palette.mode);
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
 
+  const { authToken } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authToken) {
+      navigate("/");
+    }
+  }, [authToken, navigate]);
+
   const [cart, setCart] = useState([]);
   const products = [
     { name: "SUPPLEMENT", color: "#f4a89a" },
@@ -32,69 +41,70 @@ const Products = () => {
 
   return (
     <>
-    <Header title="PRODUCTS" subtitle="Welcome to your dashboard" />
+      <Header title="PRODUCTS" subtitle="Welcome to your dashboard" />
 
-   
-    <Box sx={{ padding: 4,backgroundColor: colors.primary[400] }}>
-      
-      <Grid container spacing={2}>
-        {products.map((product, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
-            <Box
-              sx={{
-                backgroundColor: product.color,
-                padding: 2,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "space-between",
-                height: "150px",
-                borderRadius: 2,
-                boxShadow: 1,
-              }}
-            >
-              <Typography variant="body1" sx={{ fontWeight: "bold", textAlign: "center" }}>
-                {product.name}
-              </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => handleAddToCart(product.name)}
-                disabled={cart.includes(product.name)} // Disable if already in the cart
+      <Box sx={{ padding: 4, backgroundColor: colors.primary[400] }}>
+        <Grid container spacing={2}>
+          {products.map((product, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Box
+                sx={{
+                  backgroundColor: product.color,
+                  padding: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  height: "150px",
+                  borderRadius: 2,
+                  boxShadow: 1,
+                }}
               >
-                {cart.includes(product.name) ? "Added" : "Add to Cart"}
-              </Button>
-            </Box>
-          </Grid>
-        ))}
-      </Grid>
+                <Typography
+                  variant="body1"
+                  sx={{ fontWeight: "bold", textAlign: "center" }}
+                >
+                  {product.name}
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleAddToCart(product.name)}
+                  disabled={cart.includes(product.name)} // Disable if already in the cart
+                >
+                  {cart.includes(product.name) ? "Added" : "Add to Cart"}
+                </Button>
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
 
-      {/* Cart Section */}
-      <Box sx={{ marginTop: 4 }}>
-        <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-          Cart:
-        </Typography>
-        {cart.length > 0 ? (
-          cart.map((item, index) => (
-            <Typography key={index} variant="body1">
-              - {item}
-            </Typography>
-          ))
-        ) : (
-          <Typography variant="body1">Your cart is empty.</Typography>
+        {/* Cart Section */}
+        <Box sx={{ marginTop: 4 }}>
+          <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+            Cart:
+          </Typography>
+          {cart.length > 0 ? (
+            cart.map((item, index) => (
+              <Typography key={index} variant="body1">
+                - {item}
+              </Typography>
+            ))
+          ) : (
+            <Typography variant="body1">Your cart is empty.</Typography>
+          )}
+        </Box>
+
+        {/* Submit Button */}
+        {cart.length > 0 && (
+          <Stack direction="row" spacing={2} sx={{ marginTop: 3 }}>
+            <Button variant="contained" color="success" onClick={handleSubmit}>
+              Done to Cart
+            </Button>
+          </Stack>
         )}
       </Box>
-
-      {/* Submit Button */}
-      {cart.length > 0 && (
-        <Stack direction="row" spacing={2} sx={{ marginTop: 3 }}>
-          <Button variant="contained" color="success" onClick={handleSubmit}>
-            Done to Cart
-          </Button>
-        </Stack>
-      )}
-    </Box>
-     </>
+    </>
   );
 };
 

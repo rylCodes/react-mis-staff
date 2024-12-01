@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import Topbar from "./scenes/global/Topbar";
 import Sidebar from "./scenes/global/Sidebar";
 import Login from "./components/Login";
@@ -21,6 +26,8 @@ import MonthPaymentForm from "./scenes/products/monthPaymentForm";
 import ChangePassword from "./components/changePassword";
 import ForgotPassword from "./components/forgotPassword";
 import EmployeeAttendance from "./scenes/employeeAttendance";
+import { AuthProvider } from "./context/AuthContext";
+import { AlertProvider } from "./context/AlertContext";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -31,16 +38,23 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <ColorModeContext.Provider value={colorMode}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <div className="app">
-            <ContentLayout isSidebar={isSidebar} setIsSidebar={setIsSidebar} />
-          </div>
-        </ThemeProvider>
-      </ColorModeContext.Provider>
-    </Router>
+    <AuthProvider>
+      <AlertProvider>
+        <Router>
+          <ColorModeContext.Provider value={colorMode}>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <div className="app">
+                <ContentLayout
+                  isSidebar={isSidebar}
+                  setIsSidebar={setIsSidebar}
+                />
+              </div>
+            </ThemeProvider>
+          </ColorModeContext.Provider>
+        </Router>
+      </AlertProvider>
+    </AuthProvider>
   );
 }
 
@@ -48,14 +62,20 @@ function ContentLayout({ isSidebar, setIsSidebar }) {
   const location = useLocation();
 
   // Define routes where Sidebar and Topbar should be hidden
-  const hideSidebarAndTopbar = ["/", "/change-password", "/forgot-password", "/payment-form", "/payment-receipt"].includes(location.pathname);
+  const hideSidebarAndTopbar = [
+    "/",
+    "/change-password",
+    "/forgot-password",
+    "/payment-form",
+    "/payment-receipt",
+  ].includes(location.pathname);
 
   return (
     <>
       {!hideSidebarAndTopbar && <Sidebar isSidebar={isSidebar} />}
       <main className="content">
         {!hideSidebarAndTopbar && <Topbar setIsSidebar={setIsSidebar} />}
-        
+
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/change-password" element={<ChangePassword />} />

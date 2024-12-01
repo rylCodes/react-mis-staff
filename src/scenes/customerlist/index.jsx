@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Button,
   Box,
@@ -21,11 +21,19 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import ArchiveOutlinedIcon from "@mui/icons-material/ArchiveOutlined";
 import AddCustomer from "./addCustomer";
 import axios from "axios";
+import { AuthContext } from "../../context/AuthContext";
 
 const CustomerList = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const { authToken } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authToken) {
+      navigate("/");
+    }
+  }, [authToken, navigate]);
 
   const [AddCustomerOpen, setAddCustomerOpen] = useState(false);
   const [updateCustomerOpen, setUpdateCustomerOpen] = useState(false);
@@ -51,8 +59,6 @@ const CustomerList = () => {
     setSelectedCustomer(null);
     setUpdateCustomerOpen(false);
   };
-
- 
 
   const handleArchive = async (id) => {
     try {
@@ -143,12 +149,16 @@ const CustomerList = () => {
             backgroundColor: colors.blueAccent[700],
             borderBottom: "none",
           },
-          "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.primary[400] },
+          "& .MuiDataGrid-virtualScroller": {
+            backgroundColor: colors.primary[400],
+          },
           "& .MuiDataGrid-footerContainer": {
             borderTop: "none",
             backgroundColor: colors.blueAccent[700],
           },
-          "& .MuiCheckbox-root": { color: `${colors.greenAccent[200]} !important` },
+          "& .MuiCheckbox-root": {
+            color: `${colors.greenAccent[200]} !important`,
+          },
         }}
       >
         <Box display="flex" justifyContent="flex-end" mb="10px">
@@ -157,12 +167,25 @@ const CustomerList = () => {
           </Button>
         </Box>
         <DataGrid checkboxSelection rows={customer} columns={columns} />
-        <Dialog open={AddCustomerOpen} onClose={handleClose} fullWidth maxWidth="sm">
+        <Dialog
+          open={AddCustomerOpen}
+          onClose={handleClose}
+          fullWidth
+          maxWidth="sm"
+        >
           <DialogContent>
-            <AddCustomer closeModal={handleClose} onAddCustomer={handleAddCustomer} />
+            <AddCustomer
+              closeModal={handleClose}
+              onAddCustomer={handleAddCustomer}
+            />
           </DialogContent>
         </Dialog>
-        <Dialog open={updateCustomerOpen} onClose={handleUpdateClose} fullWidth maxWidth="sm">
+        <Dialog
+          open={updateCustomerOpen}
+          onClose={handleUpdateClose}
+          fullWidth
+          maxWidth="sm"
+        >
           <DialogTitle>Update Customer</DialogTitle>
           <DialogContent>
             {selectedCustomer && (
@@ -191,7 +214,10 @@ const CustomerList = () => {
                   margin="normal"
                   defaultValue={selectedCustomer.name}
                   onChange={(e) =>
-                    setSelectedCustomer({ ...selectedCustomer, name: e.target.value })
+                    setSelectedCustomer({
+                      ...selectedCustomer,
+                      name: e.target.value,
+                    })
                   }
                 />
                 <TextField
@@ -200,7 +226,10 @@ const CustomerList = () => {
                   margin="normal"
                   defaultValue={selectedCustomer.email}
                   onChange={(e) =>
-                    setSelectedCustomer({ ...selectedCustomer, email: e.target.value })
+                    setSelectedCustomer({
+                      ...selectedCustomer,
+                      email: e.target.value,
+                    })
                   }
                 />
                 <Button
