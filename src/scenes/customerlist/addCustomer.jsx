@@ -1,161 +1,137 @@
-import { useState } from "react";
-import { TextField, Button, Box, MenuItem, Select, InputLabel, FormControl } from "@mui/material";
+import { useContext, useState } from "react";
+import {
+  TextField,
+  Button,
+  Box,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
+import axios from "axios";
+import { AuthContext } from "../../context/AuthContext";
+import { useAlert } from "../../context/AlertContext";
 
 const AddCustomer = ({ closeModal, onAddCustomer }) => {
-  // Price list for each service
-  const servicePrices = {
-    "Gym Per session": 60,
-    "Gym Monthly": 750,
-    "Monthly Treadmill": 550,
-    "Gym + Treadmill": 1200,
-    "P.I Per Session": 120,
-    "P.I Monthly": 1500,
-    "Zumba": 70,
-    "Dance": 30,
-    "Muay Thai": 250,
-    "Taekwondo": 50,
-    "Boxing": 60,
+  const { authToken } = useContext(AuthContext);
+  const showAlert = useAlert();
+
+  const handleSuccess = () => {
+    showAlert(`Customer successfully added.`, "success");
   };
 
-  const [customerData, setCustomerData] = useState({
-    name: "",
-    sex: "",
+  const handleError = () => {
+    showAlert("An error occurred while adding the customer!", "error");
+  };
+
+  const [clientData, setClientData] = useState({
+    firstname: "",
+    lastname: "",
     email: "",
-    contact: "",
-    chosenservices: "",
-    instructor: "",
-    plan: "",
-    amount: "",
+    password: "",
     address: "",
-    phone: "",
+    gender: "",
+    contact_no: "",
   });
+
+  const [error, setError] = useState(null);
 
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setCustomerData((prevData) => {
-      const updatedData = {
-        ...prevData,
-        [name]: value,
-      };
-
-      // Automatically update the amount based on the chosen service
-      if (name === "chosenservices") {
-        updatedData.amount = servicePrices[value] || "";
-      }
-
-      return updatedData;
-    });
+    setClientData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onAddCustomer(customerData);
-    closeModal();
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/staff/store-client",
+        clientData,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+      onAddCustomer(response.data.data); // Update parent state if needed
+      closeModal();
+      handleSuccess();
+    } catch (err) {
+      console.log(err);
+      setError("An error occurred while adding the client.");
+      handleError();
+    }
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
+    >
+      {error && <div style={{ color: "red" }}>{error}</div>}
       <TextField
-        label="Name"
-        name="name"
-        value={customerData.name}
+        label="First Name"
+        name="firstname"
+        value={clientData.firstname}
         onChange={handleChange}
         required
       />
-      <FormControl required>
-        <InputLabel>Sex</InputLabel>
-        <Select
-          label="Sex"
-          name="sex"
-          value={customerData.sex}
-          onChange={handleChange}
-        >
-          <MenuItem value="Male">Male</MenuItem>
-          <MenuItem value="Female">Female</MenuItem>
-          <MenuItem value="Other">Other</MenuItem>
-        </Select>
-      </FormControl>
-
+      <TextField
+        label="Last Name"
+        name="lastname"
+        value={clientData.lastname}
+        onChange={handleChange}
+        required
+      />
       <TextField
         label="Email"
         name="email"
-        value={customerData.email}
+        type="email"
+        value={clientData.email}
         onChange={handleChange}
         required
       />
       <TextField
-        label="Contact"
-        name="contact"
-        value={customerData.contact}
+        label="Password"
+        name="password"
+        type="password"
+        value={clientData.password}
         onChange={handleChange}
         required
       />
       <TextField
         label="Address"
         name="address"
-        value={customerData.address}
+        value={clientData.address}
         onChange={handleChange}
         required
       />
       <FormControl required>
-        <InputLabel>Chosen Services</InputLabel>
+        <InputLabel>Gender</InputLabel>
         <Select
-          label="Chosen Services"
-          name="chosenservices"
-          value={customerData.chosenservices}
+          label="Gender"
+          name="gender"
+          value={clientData.gender}
           onChange={handleChange}
         >
-          {Object.keys(servicePrices).map((service) => (
-            <MenuItem key={service} value={service}>{service}</MenuItem>
-          ))}
+          <MenuItem value="male">Male</MenuItem>
+          <MenuItem value="female">Female</MenuItem>
+          <MenuItem value="other">Other</MenuItem>
         </Select>
       </FormControl>
-
-      <FormControl required>
-        <InputLabel>Instructor</InputLabel>
-        <Select
-          label="Instructor"
-          name="instructor"
-          value={customerData.instructor}
-          onChange={handleChange}
-        >
-          <MenuItem value="N/A">N/A</MenuItem>
-          <MenuItem value="John Puti">John Puti</MenuItem>
-          <MenuItem value="Carlo Diaz">Carlo Diaz</MenuItem>
-          <MenuItem value="Jose De Giba">Jose De Giba</MenuItem>
-        </Select>
-      </FormControl>
-
-      <FormControl required>
-        <InputLabel>Plan</InputLabel>
-        <Select
-          label="Plan"
-          name="plan"
-          value={customerData.plan}
-          onChange={handleChange}
-        >
-          <MenuItem value="N/A">N/A</MenuItem>
-          <MenuItem value="1 Week">1 Week</MenuItem>
-          <MenuItem value="2 Week">2 Week</MenuItem>
-          <MenuItem value="1 Month">1 Month</MenuItem>
-          <MenuItem value="2 Month">2 Month</MenuItem>
-          <MenuItem value="3 Months">3 Months</MenuItem>
-        </Select>
-      </FormControl>
-
       <TextField
-        label="Amount"
-        name="amount"
-        value={customerData.amount}
+        label="Contact Number"
+        name="contact_no"
+        type="tel"
+        value={clientData.contact_no}
         onChange={handleChange}
-        disabled // Make this field read-only
+        required
       />
-
       <Button type="submit" variant="contained" color="primary">
-        Add Customer
+        Add Client
       </Button>
     </Box>
   );

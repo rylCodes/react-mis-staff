@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Button,
   Box,
@@ -22,12 +22,30 @@ import ArchiveOutlinedIcon from "@mui/icons-material/ArchiveOutlined";
 import AddCustomer from "./addCustomer";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
+import { useAlert } from "../../context/AlertContext";
 
 const CustomerList = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const { authToken } = useContext(AuthContext);
+  const showAlert = useAlert();
   const navigate = useNavigate();
+
+  const handleUpdateSuccess = () => {
+    showAlert(`Customer successfully updated.`, "success");
+  };
+
+  // const handleArchiveSuccess = () => {
+  //   showAlert(`Customer successfully archived.`, "success");
+  // };
+
+  const handleError = () => {
+    showAlert("An error occurred!", "error");
+  };
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
 
   useEffect(() => {
     if (!authToken) {
@@ -37,21 +55,25 @@ const CustomerList = () => {
 
   const [AddCustomerOpen, setAddCustomerOpen] = useState(false);
   const [updateCustomerOpen, setUpdateCustomerOpen] = useState(false);
-  const [customer, setCustomer] = useState(mockDataCustomer);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
+  const [customer, setCustomer] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   const handleOpen = () => setAddCustomerOpen(true);
   const handleClose = () => setAddCustomerOpen(false);
 
   const handleAddCustomer = (newcustomer) => {
-    setCustomer((prevCustomer) => [
-      ...prevCustomer,
-      { id: prevCustomer.length + 1, ...newcustomer },
-    ]);
+    fetchClients();
   };
 
   const handleUpdateOpen = (customer) => {
-    setSelectedCustomer(customer);
+    const [firstname, ...lastname] = customer.name.split(" ");
+    setSelectedCustomer({
+      ...customer,
+      firstname,
+      lastname: lastname.join(" "),
+    });
     setUpdateCustomerOpen(true);
   };
 
@@ -60,21 +82,119 @@ const CustomerList = () => {
     setUpdateCustomerOpen(false);
   };
 
-  const handleArchive = async (id) => {
+  // const handleArchive = async (id) => {
+  //   try {
+  //     const userConfirmed = confirm(
+  //       "Do you want to move this customer to archive?"
+  //     );
+  //     if (!userConfirmed) return;
+
+  //     const response = await axios.post(
+  //       `http://localhost:8000/api/staff/soft-delete-client/${id}`,
+  //       null, // No payload needed
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${authToken}`,
+  //         },
+  //       }
+  //     );
+
+  //     if (response.status === 200) {
+  //       handleArchiveSuccess();
+  //       fetchClients();
+  //     } else {
+  //       handleError();
+  //     }
+  //   } catch (error) {
+  //     console.error("Error deleting customer:", error);
+  //     handleError();
+  //   }
+  // };
+
+  const fetchClients = async () => {
+    setIsFetching(true);
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/archive-customer",
-        { id }
+      const response = await axios.get(
+        "http://localhost:8000/api/staff/show-client",
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
       );
+      console.log(response.data.data);
       if (response.status === 200) {
-        setCustomer((prevCustomer) => prevCustomer.filter((c) => c.id !== id));
-        alert("Customer archived successfully.");
+        const clients = response.data.data.map((client) => ({
+          id: client.id,
+          name: client.fullname,
+          sex: client.gender,
+          email: client.email,
+          contact: client.contact_no,
+          address: client.address,
+          chosenservices: client.chosen_services,
+          instructor: client.instructor,
+          plan: client.plan,
+          amount: client.amount,
+          isActive: client.is_active,
+        }));
+        setCustomer(clients);
+        setIsFetching(false);
       } else {
-        alert("Failed to archive the customer.");
+        console.error("Failed to fetch clients");
+        setIsFetching(false);
       }
     } catch (error) {
-      console.error("Error archiving customer:", error);
-      alert("An error occurred while archiving the customer.");
+      console.error("Error fetching clients:", error);
+      setIsFetching(false);
+    }
+  };
+
+  // Update customer in the API
+  const handleUpdateCustomer = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.post(
+        `http://localhost:8000/api/staff/update-client/${selectedCustomer.id}`,
+        {
+          firstname: selectedCustomer.firstname,
+          lastname: selectedCustomer.lastname,
+          email: selectedCustomer.email,
+          password: selectedCustomer.password, // Optional: Only if changing password
+          address: selectedCustomer.address,
+          gender: selectedCustomer.sex,
+          contact_no: selectedCustomer.contact,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        // Update local state after successful API update
+        const updatedCustomer = {
+          ...selectedCustomer,
+          fullname:
+            selectedCustomer.firstname + " " + selectedCustomer.lastname,
+          password: "", // empty password
+        };
+
+        setCustomer((prevCustomer) =>
+          prevCustomer.map((c) =>
+            c.id === selectedCustomer.id ? updatedCustomer : c
+          )
+        );
+        handleUpdateClose();
+        setIsLoading(false);
+        handleUpdateSuccess();
+      } else {
+        setIsLoading(false);
+        handleError();
+      }
+    } catch (error) {
+      console.error("Error updating customer:", error);
+      setIsLoading(false);
+      handleError();
     }
   };
 
@@ -93,7 +213,6 @@ const CustomerList = () => {
   ];
 
   const handleSubmit = () => {
-    // Pass the selected customer data to the PaymentForm page
     navigate("/payment-form", { state: { customer: selectedCustomer } });
   };
 
@@ -114,17 +233,17 @@ const CustomerList = () => {
       flex: 1,
       renderCell: (params) => (
         <Box display="flex" gap="9px" justifyContent="center">
-          <Button
+          {/* <Button
             variant="outlined"
-            color="primary"
+            color="inherit"
             startIcon={<ArchiveOutlinedIcon />}
             onClick={() => handleArchive(params.row.id)}
           >
             Archive
-          </Button>
+          </Button> */}
           <Button
             variant="outlined"
-            color="error"
+            color="success"
             startIcon={<EditOutlinedIcon />}
             onClick={() => handleUpdateOpen(params.row)}
           >
@@ -166,7 +285,14 @@ const CustomerList = () => {
             Add Customer
           </Button>
         </Box>
-        <DataGrid checkboxSelection rows={customer} columns={columns} />
+
+        <DataGrid
+          loading={isFetching}
+          checkboxSelection
+          rows={customer}
+          columns={columns}
+        />
+
         <Dialog
           open={AddCustomerOpen}
           onClose={handleClose}
@@ -190,33 +316,27 @@ const CustomerList = () => {
           <DialogContent>
             {selectedCustomer && (
               <Box component="form" mt={2}>
-                <FormControl fullWidth margin="normal">
-                  <InputLabel>Chosen Services</InputLabel>
-                  <Select
-                    value={selectedCustomer.chosenservices || ""}
-                    onChange={(e) =>
-                      setSelectedCustomer({
-                        ...selectedCustomer,
-                        chosenservices: e.target.value,
-                      })
-                    }
-                  >
-                    {serviceOptions.map((service) => (
-                      <MenuItem key={service} value={service}>
-                        {service}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
                 <TextField
                   fullWidth
-                  label="Full Name"
+                  label="First Name"
                   margin="normal"
-                  defaultValue={selectedCustomer.name}
+                  value={selectedCustomer.firstname}
                   onChange={(e) =>
                     setSelectedCustomer({
                       ...selectedCustomer,
-                      name: e.target.value,
+                      firstname: e.target.value,
+                    })
+                  }
+                />
+                <TextField
+                  fullWidth
+                  label="Last Name"
+                  margin="normal"
+                  value={selectedCustomer.lastname}
+                  onChange={(e) =>
+                    setSelectedCustomer({
+                      ...selectedCustomer,
+                      lastname: e.target.value,
                     })
                   }
                 />
@@ -224,7 +344,7 @@ const CustomerList = () => {
                   fullWidth
                   label="Email"
                   margin="normal"
-                  defaultValue={selectedCustomer.email}
+                  value={selectedCustomer.email}
                   onChange={(e) =>
                     setSelectedCustomer({
                       ...selectedCustomer,
@@ -232,12 +352,51 @@ const CustomerList = () => {
                     })
                   }
                 />
+                <TextField
+                  fullWidth
+                  label="Password"
+                  margin="normal"
+                  value={selectedCustomer.password}
+                  type="password"
+                  onChange={(e) =>
+                    setSelectedCustomer({
+                      ...selectedCustomer,
+                      password: e.target.value,
+                    })
+                  }
+                />
+                <TextField
+                  fullWidth
+                  label="Address"
+                  margin="normal"
+                  value={selectedCustomer.address}
+                  onChange={(e) =>
+                    setSelectedCustomer({
+                      ...selectedCustomer,
+                      address: e.target.value,
+                    })
+                  }
+                />
+                <TextField
+                  fullWidth
+                  label="Contact No"
+                  margin="normal"
+                  value={selectedCustomer.contact}
+                  onChange={(e) =>
+                    setSelectedCustomer({
+                      ...selectedCustomer,
+                      contact: e.target.value,
+                    })
+                  }
+                />
+
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={handleSubmit} // Navigate to PaymentForm
+                  onClick={handleUpdateCustomer}
+                  disabled={isLoading}
                 >
-                  Submit
+                  Save
                 </Button>
               </Box>
             )}
