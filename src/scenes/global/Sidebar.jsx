@@ -5,13 +5,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { tokens } from "../../theme";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import InventoryIcon from "@mui/icons-material/Inventory";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-
- 
 
   return (
     <MenuItem
@@ -43,7 +44,6 @@ const Sidebar = () => {
   const [showSettingsOptions, setShowSettingsOptions] = useState(false);
   const toggleSettingsOptions = () => {
     setShowSettingsOptions((prev) => !prev); // Toggle sub-menu visibility
-
   };
   const [showArchiveOptions, setShowArchiveOptions] = useState(false);
   const toggleArchiveOptions = () => {
@@ -54,8 +54,6 @@ const Sidebar = () => {
     setSelected(title);
     navigate(path);
   };
-
- 
 
   return (
     <Box
@@ -104,10 +102,7 @@ const Sidebar = () => {
           {/* USER PROFILE */}
           {!isCollapsed && (
             <Box mb="25px">
-              
-              <Box textAlign="center">
-                
-              </Box>
+              <Box textAlign="center"></Box>
             </Box>
           )}
 
@@ -119,106 +114,101 @@ const Sidebar = () => {
               to="/dashboard"
               icon={<HomeOutlinedIcon />}
               selected={selected}
-              setSelected={() => handleSelect('Dashboard', '/dashboard')}
+              setSelected={() => handleSelect("Dashboard", "/dashboard")}
             />
 
-          
             {/* Customer Menu */}
             <Item
               title="Customer"
               to="/"
               icon={<PeopleOutlinedIcon />}
-              selected={selected === '/'}
+              selected={selected === "/"}
               setSelected={() => {
-                handleSelect('/');
+                handleSelect("/");
                 toggleCustomerOptions();
-             }}
+              }}
             />
-             {showCustomerOptions && (
-                <div style={{ paddingLeft: '20px' }}>
-                  <Item
+            {showCustomerOptions && (
+              <div style={{ paddingLeft: "20px" }}>
+                <Item
                   title="Customer List"
                   to="/customer-list"
-                  selected={selected === '/customer-list'}
-                  setSelected={() => handleSelect('Customer List', '/customer-list')}
+                  selected={selected === "/customer-list"}
+                  setSelected={() =>
+                    handleSelect("Customer List", "/customer-list")
+                  }
                 />
-                  
+
                 <Item
                   title="Payment"
                   to="/payment"
-                  selected={selected === '/payment'}
-                  setSelected={() => handleSelect('Payment', '/payment')}
+                  selected={selected === "/payment"}
+                  setSelected={() => handleSelect("Payment", "/payment")}
                 />
-             
-                 
               </div>
-            )}  
-              <Item
+            )}
+            <Item
               title="Employee Attendance"
               to="/employee-attendance"
-              icon={<HomeOutlinedIcon />}
+              icon={<BadgeOutlinedIcon />}
               selected={selected}
-              setSelected={() => handleSelect('Employee Attendance', '/employee-attendance')}
+              setSelected={() =>
+                handleSelect("Employee Attendance", "/employee-attendance")
+              }
             />
-             <Item
+
+            <Item
               title="Products"
               to="/products"
-              icon={<HomeOutlinedIcon />}
+              icon={<ShoppingCartIcon />}
               selected={selected}
-              setSelected={() => handleSelect('Products', '/products')}
+              setSelected={() => handleSelect("Products", "/products")}
             />
 
-
-              <Item
+            <Item
               title="Settings"
               to="/settings"
               icon={<SettingsOutlinedIcon />}
-              selected={selected === '/settings'}
+              selected={selected === "/settings"}
               setSelected={() => {
-                handleSelect('/settings');
+                handleSelect("/settings");
                 toggleSettingsOptions();
-            }}
+              }}
             />
             {showSettingsOptions && (
-                <div style={{ paddingLeft: '20px' }}>
-
-
-              <Item
-              title="Archive"
-              to="/"
-              selected={selected === '/'}
-              setSelected={() => {
-                handleSelect('/settings');
-                toggleArchiveOptions();
-            }}
-            />
-                {showArchiveOptions && (
-                <div style={{ paddingLeft: '20px' }}>
-
-                  
+              <div style={{ paddingLeft: "20px" }}>
                 <Item
-                  title="Customer"
-                  to="/customer-archive"
-                  selected={selected === "/customer-archive"}
-                  setSelected={() => handleSelect('Customer', "/customer-archive")}                
+                  title="Archive"
+                  to="/"
+                  selected={selected === "/"}
+                  setSelected={() => {
+                    handleSelect("/settings");
+                    toggleArchiveOptions();
+                  }}
                 />
-              
-               
-              </div>
-            )}              
-              
+                {showArchiveOptions && (
+                  <div style={{ paddingLeft: "20px" }}>
+                    <Item
+                      title="Customer"
+                      to="/customer-archive"
+                      selected={selected === "/customer-archive"}
+                      setSelected={() =>
+                        handleSelect("Customer", "/customer-archive")
+                      }
+                    />
+                  </div>
+                )}
+
                 <Item
                   title="Account Settings"
                   to="/account-settings"
-                  selected={selected === '/account-settings'}
-                  setSelected={() => handleSelect('Account Settings','/account-settings')}
+                  selected={selected === "/account-settings"}
+                  setSelected={() =>
+                    handleSelect("Account Settings", "/account-settings")
+                  }
                 />
-               
-               
-                
               </div>
-            )}                        
-                    
+            )}
           </Box>
         </Menu>
       </ProSidebarProvider>
