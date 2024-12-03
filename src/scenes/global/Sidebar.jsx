@@ -10,6 +10,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
+import AccountBoxIcon from "@mui/icons-material/AccountBox";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -229,49 +230,12 @@ const Sidebar = () => {
             )}
 
             <Item
-              title="Settings"
-              to="/settings"
-              icon={<SettingsOutlinedIcon />}
-              selected={selected === "/settings"}
-              setSelected={() => {
-                handleSelect("/settings");
-                toggleSettingsOptions();
-              }}
+              title="Profile"
+              to="/profile"
+              icon={<AccountBoxIcon />}
+              selected={selected === "/profile"}
+              setSelected={() => handleSelect("Profile", "/profile")}
             />
-            {showSettingsOptions && (
-              <div style={{ paddingLeft: "20px" }}>
-                <Item
-                  title="Archive"
-                  to="/"
-                  selected={selected === "/"}
-                  setSelected={() => {
-                    handleSelect("/settings");
-                    toggleArchiveOptions();
-                  }}
-                />
-                {showArchiveOptions && (
-                  <div style={{ paddingLeft: "20px" }}>
-                    <Item
-                      title="Customer"
-                      to="/customer-archive"
-                      selected={selected === "/customer-archive"}
-                      setSelected={() =>
-                        handleSelect("Customer", "/customer-archive")
-                      }
-                    />
-                  </div>
-                )}
-
-                <Item
-                  title="Account Settings"
-                  to="/account-settings"
-                  selected={selected === "/account-settings"}
-                  setSelected={() =>
-                    handleSelect("Account Settings", "/account-settings")
-                  }
-                />
-              </div>
-            )}
           </Box>
         </Menu>
       </ProSidebarProvider>

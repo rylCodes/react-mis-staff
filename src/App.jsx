@@ -34,6 +34,7 @@ import Subscriptions from "./scenes/subscriptions";
 import EquipmentTable from "./scenes/inventory/equipmentTable.jsx";
 import InventoryTable from "./scenes/inventory/inventoryTable.jsx";
 import Report from "./scenes/inventory/report.jsx";
+import Profile from "./components/Profile.jsx";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -106,6 +107,7 @@ function ContentLayout({ isSidebar, setIsSidebar }) {
           <Route path="/equipmentTable" element={<EquipmentTable />} />
           <Route path="/inventory-table" element={<InventoryTable />} />
           <Route path="/report" element={<Report />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </main>
     </>
