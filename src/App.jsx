@@ -28,6 +28,12 @@ import ForgotPassword from "./components/forgotPassword";
 import EmployeeAttendance from "./scenes/employeeAttendance";
 import { AuthProvider } from "./context/AuthContext";
 import { AlertProvider } from "./context/AlertContext";
+import Subscriptions from "./scenes/subscriptions";
+
+// import InventoryForm from "./scenes/inventory/inventoryForm.jsx";
+import EquipmentTable from "./scenes/inventory/equipmentTable.jsx";
+import InventoryTable from "./scenes/inventory/inventoryTable.jsx";
+import Report from "./scenes/inventory/report.jsx";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -94,6 +100,12 @@ function ContentLayout({ isSidebar, setIsSidebar }) {
           <Route path="/month-payment-form" element={<MonthPaymentForm />} />
           <Route path="/monthly-list" element={<Monthlylist />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/subscriptions" element={<Subscriptions />} />
+
+          {/* <Route path="/inventoryform" element={<InventoryForm />} /> */}
+          <Route path="/equipmentTable" element={<EquipmentTable />} />
+          <Route path="/inventory-table" element={<InventoryTable />} />
+          <Route path="/report" element={<Report />} />
         </Routes>
       </main>
     </>

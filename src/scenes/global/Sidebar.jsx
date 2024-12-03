@@ -9,6 +9,7 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import InventoryIcon from "@mui/icons-material/Inventory";
+import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -48,6 +49,11 @@ const Sidebar = () => {
   const [showArchiveOptions, setShowArchiveOptions] = useState(false);
   const toggleArchiveOptions = () => {
     setShowArchiveOptions((prev) => !prev); // Toggle sub-menu visibility
+  };
+
+  const [showInventoryOptions, setShowInventoryOptions] = useState(false);
+  const toggleInventoryOptions = () => {
+    setShowInventoryOptions((prev) => !prev); // Toggle sub-menu visibility
   };
 
   const handleSelect = (title, path) => {
@@ -158,12 +164,69 @@ const Sidebar = () => {
             />
 
             <Item
+              title="Subscriptions"
+              to="/subscriptions"
+              icon={<FitnessCenterIcon />}
+              selected={selected}
+              setSelected={() =>
+                handleSelect("Subscriptions", "/subscriptions")
+              }
+            />
+
+            <Item
               title="Products"
               to="/products"
               icon={<ShoppingCartIcon />}
               selected={selected}
               setSelected={() => handleSelect("Products", "/products")}
             />
+
+            {/*Inventory */}
+            <Item
+              title="Inventory"
+              to="/"
+              icon={<InventoryIcon />}
+              selected={selected === "/"}
+              setSelected={() => {
+                handleSelect("/");
+                toggleInventoryOptions();
+              }}
+            />
+            {showInventoryOptions && (
+              <div style={{ paddingLeft: "20px" }}>
+                {/* <Item
+                  title="Inventory Form"
+                  to="/inventoryform"
+                  selected={selected === "/inventoryform"}
+                  setSelected={() =>
+                    handleSelect("Inventory Form", "/inventoryform")
+                  }
+                /> */}
+                <Item
+                  title="Equipment Table"
+                  to="/equipmenttable"
+                  selected={selected === "/equipmentTable"}
+                  setSelected={() =>
+                    handleSelect("Equipment Table", "/equipmentTable")
+                  }
+                />
+                <Item
+                  title="Inventory Table"
+                  to="/inventory-table"
+                  selected={selected === "/inventory-table"}
+                  setSelected={() =>
+                    handleSelect("Inventory Table", "/inventory-table")
+                  }
+                />
+
+                <Item
+                  title="Report"
+                  to="/report"
+                  selected={selected === "/report"}
+                  setSelected={() => handleSelect("Report", "/report")}
+                />
+              </div>
+            )}
 
             <Item
               title="Settings"
