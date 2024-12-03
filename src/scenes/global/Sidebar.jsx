@@ -146,11 +146,18 @@ const Sidebar = () => {
                   }
                 />
 
-                <Item
+                {/* <Item
                   title="Payment"
                   to="/payment"
                   selected={selected === "/payment"}
                   setSelected={() => handleSelect("Payment", "/payment")}
+                /> */}
+
+                <Item
+                  title="Sales"
+                  to="/sales"
+                  selected={selected === "/sales"}
+                  setSelected={() => handleSelect("Sales", "/sales")}
                 />
               </div>
             )}

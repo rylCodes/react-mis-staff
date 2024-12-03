@@ -29,6 +29,7 @@ import EmployeeAttendance from "./scenes/employeeAttendance";
 import { AuthProvider } from "./context/AuthContext";
 import { AlertProvider } from "./context/AlertContext";
 import Subscriptions from "./scenes/subscriptions";
+import Sales from "./scenes/customerlist/Sales";
 
 // import InventoryForm from "./scenes/inventory/inventoryForm.jsx";
 import EquipmentTable from "./scenes/inventory/equipmentTable.jsx";
@@ -89,7 +90,8 @@ function ContentLayout({ isSidebar, setIsSidebar }) {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/customer-list" element={<Customerlist />} />
-          <Route path="/payment" element={<Payment />} />
+          {/* <Route path="/payment" element={<Payment />} /> */}
+          <Route path="/sales" element={<Sales />} />
           <Route path="/payment-form" element={<PaymentForm />} />
           <Route path="/payment-receipt" element={<PaymentReceipt />} />
           <Route path="/update" element={<Update />} />

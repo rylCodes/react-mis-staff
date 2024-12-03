@@ -21,6 +21,7 @@ import Header from "../../components/Header";
 import { AuthContext } from "../../context/AuthContext";
 import axios from "axios";
 import POSReceipt from "./POSReceipt";
+import { useAlert } from "../../context/AlertContext";
 
 const getRandomDarkColor = (number) => {
   // const hue = Math.floor(Math.random() * 360);
@@ -32,6 +33,7 @@ const Products = () => {
   const colors = tokens(theme.palette.mode);
 
   const { authToken } = useContext(AuthContext);
+  const showAlert = useAlert();
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);
@@ -39,10 +41,10 @@ const Products = () => {
   const [order, setOrder] = useState([]);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [customerId, setCustomerId] = useState(null);
   const [customerName, setCustomerName] = useState("");
-  const [newCustomerName, setNewCustomerName] = useState(""); // Added state for new customer name
   const [amountPaid, setAmountPaid] = useState("");
-  const [transactionDetails, setTransactionDetails] = useState(null);
+  const [transactionDetails, setTransactionDetails] = useState({});
   const [customers, setCustomers] = useState([]); // Added state for customers
   const [colours, setColours] = useState([]);
 
@@ -51,7 +53,7 @@ const Products = () => {
       navigate("/");
     } else {
       fetchProducts();
-      fetchCustomers(); // Fetch customers on component mount
+      fetchCustomers();
     }
   }, [authToken, navigate]);
 
@@ -59,7 +61,7 @@ const Products = () => {
     setIsFetching(true); // Set isFetching to true before fetching
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/admin/show-inventory",
+        "http://localhost:8000/api/staff/inventory-lists",
         {
           headers: { Authorization: `Bearer ${authToken}` },
         }
@@ -82,7 +84,7 @@ const Products = () => {
   const fetchCustomers = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/admin/show-client",
+        "http://localhost:8000/api/staff/show-client",
         {
           headers: { Authorization: `Bearer ${authToken}` },
         }
@@ -91,6 +93,17 @@ const Products = () => {
     } catch (error) {
       console.error("Error fetching customers:", error);
     }
+  };
+
+  const handleCreateSuccess = () => {
+    showAlert(`Transaction successfully saved.`, "success");
+  };
+
+  const handleError = (errorMessage) => {
+    showAlert(
+      errorMessage || "An error occurred while saving the transaction!",
+      "error"
+    );
   };
 
   const handleAddToOrder = (product) => {
@@ -108,42 +121,23 @@ const Products = () => {
     }
   };
 
+  const handleNavigateToCustomerList = () => {
+    if (confirm("Do you want to go to customer list?")) {
+      navigate("/customer-list");
+    }
+  };
+
   const handleOpenCustomerModal = () => {
     setIsCustomerModalOpen(true);
   };
 
-  const handleCloseCustomerModal = () => {
+  const handleCloseCustomerModal = async () => {
     setIsCustomerModalOpen(false);
   };
 
-  const handleCustomerSubmit = async () => {
-    let customerId = customerName;
-
-    if (customerName === "new") {
-      try {
-        const response = await axios.post(
-          "http://localhost:8000/api/admin/create-client",
-          { fullname: newCustomerName },
-          {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
-          }
-        );
-        if (response.status === 201) {
-          customerId = response.data.data.id;
-        } else {
-          console.error("Failed to create new customer");
-          return;
-        }
-      } catch (error) {
-        console.error("Error creating new customer:", error);
-        return;
-      }
-    }
-
+  const handleProceedPayment = async (e) => {
+    e.preventDefault();
     setIsCustomerModalOpen(false);
-    setIsReceiptModalOpen(true);
 
     const totalAmount = order.reduce(
       (sum, item) => sum + item.price * item.quantity,
@@ -152,28 +146,63 @@ const Products = () => {
     const change = parseFloat(amountPaid) - totalAmount;
 
     setTransactionDetails({
-      customerId,
-      customerName:
-        customerName === "new"
-          ? newCustomerName
-          : customers.find((c) => c.id === customerName)?.fullname,
+      customerName,
       totalAmount,
       amountPaid: parseFloat(amountPaid),
       change,
       items: order,
     });
 
-    // TODO: Send transaction details to the backend
-    // This is where you would make an API call to save the transaction
+    if (amountPaid < totalAmount) {
+      handleError("Insufficient payment amount!");
+    } else {
+      if (
+        confirm(
+          "Are you sure all the details are correct before continuing? This action cannot be undone."
+        )
+      ) {
+        try {
+          await createTransaction();
+          setIsReceiptModalOpen(true);
+          handleCreateSuccess();
+        } catch (error) {
+          handleError();
+        }
+      }
+    }
+  };
+
+  const createTransaction = async () => {
+    const transactionData = {
+      client_id: customerId,
+      items: order.map((item) => ({
+        product_id: item.id,
+        quantity: item.quantity,
+      })),
+    };
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/staff/cart/checkout",
+        transactionData,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleCloseReceiptModal = () => {
     setIsReceiptModalOpen(false);
     setOrder([]);
+    setCustomerId(null);
     setCustomerName("");
-    setNewCustomerName(""); // Clear new customer name
     setAmountPaid("");
-    setTransactionDetails(null);
+    setTransactionDetails({});
   };
 
   return (
@@ -250,7 +279,7 @@ const Products = () => {
           <Stack direction="row" spacing={2} sx={{ marginTop: 3 }}>
             <Button
               variant="contained"
-              color="success"
+              color="info"
               onClick={handleOpenCustomerModal}
             >
               Complete Order
@@ -267,6 +296,8 @@ const Products = () => {
         aria-describedby="customer-modal-description"
       >
         <Box
+          component={"form"}
+          onSubmit={handleProceedPayment}
           sx={{
             position: "absolute",
             top: "50%",
@@ -282,7 +313,10 @@ const Products = () => {
             Customer Information
           </Typography>
           <Autocomplete
-            options={[{ id: "new", fullname: "New Customer" }, ...customers]}
+            options={[
+              { id: "new", fullname: "-- New Customer --" },
+              ...customers,
+            ]}
             getOptionLabel={(option) => option.fullname}
             renderInput={(params) => (
               <TextField
@@ -294,26 +328,25 @@ const Products = () => {
             )}
             onChange={(event, newValue) => {
               if (newValue) {
-                setCustomerName(newValue.id);
-                if (newValue.id === "new") {
-                  setNewCustomerName("");
+                setCustomerId(newValue.id);
+                if (newValue) {
+                  setCustomerId(newValue.id);
+                  setCustomerName(newValue.fullname);
+                  if (newValue.id === "new") {
+                    handleNavigateToCustomerList();
+                  }
+                } else {
+                  setCustomerId(null);
+                  setCustomerName("");
                 }
               } else {
+                setCustomerId(null);
                 setCustomerName("");
               }
             }}
             sx={{ mt: 2, mb: 2 }}
           />
-          {customerName === "new" && (
-            <TextField
-              label="New Customer Name"
-              value={newCustomerName}
-              onChange={(e) => setNewCustomerName(e.target.value)}
-              fullWidth
-              required
-              sx={{ mb: 2 }}
-            />
-          )}
+
           <TextField
             label="Amount Paid"
             value={amountPaid}
@@ -323,11 +356,8 @@ const Products = () => {
             type="number"
             sx={{ mb: 2 }}
           />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleCustomerSubmit}
-          >
+
+          <Button variant="contained" color="primary" type="submit">
             Complete Transaction
           </Button>
         </Box>
@@ -339,6 +369,7 @@ const Products = () => {
         onClose={handleCloseReceiptModal}
         aria-labelledby="receipt-modal"
         aria-describedby="receipt-modal-description"
+        style={{ overflowY: "auto" }}
       >
         <POSReceipt
           transactionDetails={transactionDetails}

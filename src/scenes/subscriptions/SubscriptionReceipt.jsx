@@ -51,7 +51,6 @@ const SubscriptionReceipt = ({ transactionDetails, onClose }) => {
           variant="h5"
           sx={{
             fontWeight: "bold",
-            marginBottom: 2,
             color: colors.primary[500],
           }}
         >
@@ -70,6 +69,9 @@ const SubscriptionReceipt = ({ transactionDetails, onClose }) => {
         >
           Customer: {transactionDetails.customerName}
         </Typography>
+        <Typography variant="body2" sx={{ color: colors.primary[500] }}>
+          Transaction Code: {transactionDetails.transactionCode}
+        </Typography>
         <Typography
           variant="body2"
           sx={{ marginBottom: 2, color: colors.primary[500] }}
@@ -84,9 +86,10 @@ const SubscriptionReceipt = ({ transactionDetails, onClose }) => {
             <TableBody>
               <TableRow>
                 <TableCell sx={{ fontWeight: "bold" }}>Item</TableCell>
-                <TableCell align="right" sx={{ fontWeight: "bold" }}>
-                  Quantity
-                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ fontWeight: "bold" }}
+                ></TableCell>
                 <TableCell align="right" sx={{ fontWeight: "bold" }}>
                   Price
                 </TableCell>
@@ -162,7 +165,7 @@ const SubscriptionReceipt = ({ transactionDetails, onClose }) => {
                   align="right"
                   sx={{ fontWeight: "bold", borderTop: "2px solid black" }}
                 >
-                  ₱{transactionDetails.totalAmount}
+                  ₱{transactionDetails.totalAmount.toFixed(2)}
                 </TableCell>
               </TableRow>
             </TableBody>
@@ -171,7 +174,12 @@ const SubscriptionReceipt = ({ transactionDetails, onClose }) => {
 
         <Typography
           variant="body2"
-          sx={{ marginTop: 3, fontStyle: "italic", fontSize: "0.9em" }}
+          sx={{
+            marginTop: 3,
+            fontStyle: "italic",
+            fontSize: "0.9em",
+            color: colors.primary[500],
+          }}
         >
           Thank you for availing our services!
         </Typography>

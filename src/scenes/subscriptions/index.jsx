@@ -15,6 +15,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import SubscriptionReceipt from "./SubscriptionReceipt";
+import { useAlert } from "../../context/AlertContext";
 
 const getRandomDarkColor = (number) => {
   return `hsl(${number}, 30%, 50%)`;
@@ -22,7 +23,9 @@ const getRandomDarkColor = (number) => {
 
 const Subscriptions = () => {
   const { authToken } = useContext(AuthContext);
+  const showAlert = useAlert();
   const navigate = useNavigate();
+
   const [services, setServices] = useState([]);
   const [cart, setCart] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -55,6 +58,17 @@ const Subscriptions = () => {
   useEffect(() => {
     calculateTotalAmount();
   }, [cart]);
+
+  const handleCreateSuccess = () => {
+    showAlert(`Transaction successfully saved.`, "success");
+  };
+
+  const handleError = (errorMessage) => {
+    showAlert(
+      errorMessage || "An error occurred while saving the transaction!",
+      "error"
+    );
+  };
 
   const fetchServices = async () => {
     try {
@@ -135,7 +149,8 @@ const Subscriptions = () => {
     setIsCustomerModalOpen(true);
   };
 
-  const handleCompleteTransaction = async () => {
+  const handleCompleteTransaction = async (e) => {
+    e.preventDefault();
     setIsCustomerModalOpen(false);
     setTransactionDetails({
       customerName,
@@ -144,14 +159,25 @@ const Subscriptions = () => {
       totalAmount,
       amountPaid,
       change: amountPaid - totalAmount,
+      transactionCode,
     });
     if (amountPaid < totalAmount) {
-      toast.error("Insufficient payment amount", toastOptions);
+      handleError("Insufficient payment amount!");
     } else {
-      await createTransaction();
-      toast.success("Transaction completed", toastOptions);
-      setIsReceiptModalOpen(true);
-      console.log(transactionDetails);
+      if (
+        confirm(
+          "Are you sure all the details are correct before continuing? This action cannot be undone."
+        )
+      ) {
+        try {
+          await createTransaction();
+          setIsReceiptModalOpen(true);
+          console.log(transactionDetails);
+          handleCreateSuccess();
+        } catch (error) {
+          handleError();
+        }
+      }
     }
   };
 
@@ -168,7 +194,7 @@ const Subscriptions = () => {
   };
 
   const handleNavigateToCustomerList = () => {
-    if (confirm("Would you like to go to customer list?")) {
+    if (confirm("Do you want to go to customer list?")) {
       navigate("/customer-list");
     }
   };
@@ -197,6 +223,7 @@ const Subscriptions = () => {
         console.log(response.data);
       } catch (error) {
         console.error(error);
+        return;
       }
     });
   };
@@ -230,7 +257,7 @@ const Subscriptions = () => {
               gridTemplateColumns: {
                 sm: "1fr 1fr",
                 md: "1fr 1fr",
-                lg: "1fr 1fr 1fr 1fr",
+                lg: "1fr 1fr 1fr",
               },
             }}
           >
@@ -313,6 +340,8 @@ const Subscriptions = () => {
         onClose={() => setIsCustomerModalOpen(false)}
       >
         <Box
+          component={"form"}
+          onSubmit={handleCompleteTransaction}
           sx={{
             position: "absolute",
             top: "50%",
@@ -363,12 +392,7 @@ const Subscriptions = () => {
               option.firstname + " " + option.lastname
             }
             renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Search Instructor"
-                fullWidth
-                required
-              />
+              <TextField {...params} label="Search Instructor" fullWidth />
             )}
             onChange={(event, newValue) => {
               if (newValue) {
@@ -389,12 +413,7 @@ const Subscriptions = () => {
             type="number"
             sx={{ mb: 2 }}
           />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleCompleteTransaction}
-            fullWidth
-          >
+          <Button variant="contained" color="primary" type="submit" fullWidth>
             Complete Transaction
           </Button>
         </Box>
@@ -405,6 +424,7 @@ const Subscriptions = () => {
         onClose={handleCloseReceiptModal}
         aria-labelledby="receipt-modal"
         aria-describedby="receipt-modal-description"
+        style={{ overflowY: "auto" }}
       >
         <SubscriptionReceipt
           transactionDetails={transactionDetails}

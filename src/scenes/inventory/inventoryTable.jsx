@@ -54,7 +54,7 @@ const InventoryTable = () => {
       const fetchInventoryData = async () => {
         try {
           const response = await axios.get(
-            "http://localhost:8000/api/admin/show-inventory",
+            "http://localhost:8000/api/staff/inventory-lists",
             {
               headers: {
                 Authorization: `Bearer ${authToken}`,

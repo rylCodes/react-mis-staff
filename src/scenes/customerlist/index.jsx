@@ -198,24 +198,6 @@ const CustomerList = () => {
     }
   };
 
-  const serviceOptions = [
-    "Gym Per session",
-    "Gym Monthly",
-    "Monthly Treadmill",
-    "Gym + Treadmill",
-    "P.I Per Session",
-    "P.I Monthly",
-    "Zumba",
-    "Dance",
-    "Muay Thai",
-    "Taekwondo",
-    "Boxing",
-  ];
-
-  const handleSubmit = () => {
-    navigate("/payment-form", { state: { customer: selectedCustomer } });
-  };
-
   const columns = [
     { field: "id", headerName: "ID" },
     { field: "name", headerName: "Name", flex: 1 },
@@ -223,16 +205,18 @@ const CustomerList = () => {
     { field: "email", headerName: "Email", flex: 1 },
     { field: "contact", headerName: "Contact No", flex: 1 },
     { field: "address", headerName: "Address", flex: 1 },
-    { field: "chosenservices", headerName: "Chosen Services", flex: 1 },
-    { field: "instructor", headerName: "Instructor", flex: 1 },
-    { field: "plan", headerName: "Plan", flex: 1 },
-    { field: "amount", headerName: "Amount", flex: 1 },
     {
       field: "action",
       headerName: "Action",
       flex: 1,
       renderCell: (params) => (
-        <Box display="flex" gap="9px" justifyContent="center">
+        <Box
+          display="flex"
+          alignItems={"center"}
+          height={"100%"}
+          gap="9px"
+          justifyContent="center"
+        >
           {/* <Button
             variant="outlined"
             color="inherit"

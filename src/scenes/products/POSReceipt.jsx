@@ -51,7 +51,6 @@ const POSReceipt = ({ transactionDetails, onClose }) => {
           variant="h5"
           sx={{
             fontWeight: "bold",
-            marginBottom: 2,
             color: colors.primary[500],
           }}
         >
@@ -105,20 +104,6 @@ const POSReceipt = ({ transactionDetails, onClose }) => {
                 </TableRow>
               ))}
               <TableRow>
-                <TableCell
-                  colSpan={3}
-                  sx={{ fontWeight: "bold", borderTop: "2px solid black" }}
-                >
-                  Total Amount
-                </TableCell>
-                <TableCell
-                  align="right"
-                  sx={{ fontWeight: "bold", borderTop: "2px solid black" }}
-                >
-                  ₱{transactionDetails.totalAmount}
-                </TableCell>
-              </TableRow>
-              <TableRow>
                 <TableCell colSpan={3} sx={{ fontWeight: "bold" }}>
                   Amount Paid
                 </TableCell>
@@ -132,6 +117,20 @@ const POSReceipt = ({ transactionDetails, onClose }) => {
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: "bold" }}>
                   ₱{transactionDetails.change}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell
+                  colSpan={3}
+                  sx={{ fontWeight: "bold", borderTop: "2px solid black" }}
+                >
+                  Total Amount
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ fontWeight: "bold", borderTop: "2px solid black" }}
+                >
+                  ₱{transactionDetails.totalAmount.toFixed(2)}
                 </TableCell>
               </TableRow>
             </TableBody>
