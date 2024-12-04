@@ -31,7 +31,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleSuccess = (user) => {
-    showAlert(`Welcome back, ${user}!`, "success");
+    showAlert(`Welcome back, ${user || "Admin"}!`, "success");
   };
 
   const handleError = () => {
@@ -60,7 +60,7 @@ const Login = () => {
       login(data.meta.access_token); // Save token via context
       console.log("Login successful:", data);
       navigate("/dashboard");
-      handleSuccess(data.data.fullname);
+      handleSuccess(data.data.name);
       setIsLoading(false);
     } catch (err) {
       // Handle errors
@@ -82,7 +82,7 @@ const Login = () => {
 
   const paperStyle = {
     padding: 20,
-    height: "60vh",
+    height: "24rem",
     width: 380,
     margin: "150px auto",
   };
@@ -107,7 +107,7 @@ const Login = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <div style={{ position: "relative" }}>
+          <div style={{ position: "relative", marginBottom: "2rem" }}>
             <TextField
               label="Password"
               placeholder="Enter password"
@@ -141,27 +141,29 @@ const Login = () => {
             }
             label="Remember me"
           />
-          <Typography>
-            <Link href="/forgot-password">Forgot password?</Link>
-          </Typography>
-          {error && <Typography color="error">{error}</Typography>}
-          <Button
-            type="submit"
-            color="primary"
-            variant="contained"
-            style={btnStyle}
-            fullWidth
-            disabled={isLoading}
-          >
-            {isLoading ? "Signing in..." : "Sign In"}
-          </Button>
+          <div>
+            {/* <Typography>
+              <Link href="/forgot-password">Forgot password?</Link>
+            </Typography> */}
+            {error && <Typography color="error">{error}</Typography>}
+            <Button
+              type="submit"
+              color="primary"
+              variant="contained"
+              style={btnStyle}
+              fullWidth
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+          </div>
         </form>
         {/* Link to Sign Up Page */}
-        <Typography>
+        {/* <Typography>
           <Link href="/signup" style={{ textDecoration: "none" }}>
             Don't have an account? Sign Up
           </Link>
-        </Typography>
+        </Typography> */}
       </Paper>
     </Grid>
   );
