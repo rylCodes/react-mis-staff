@@ -31,7 +31,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleSuccess = (user) => {
-    showAlert(`Welcome back, ${user || "Admin"}!`, "success");
+    showAlert(`Welcome back, ${user}!`, "success");
   };
 
   const handleError = () => {
