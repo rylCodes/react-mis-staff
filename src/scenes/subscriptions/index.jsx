@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import SubscriptionReceipt from "./SubscriptionReceipt";
 import { useAlert } from "../../context/AlertContext";
+import TransactionSummary from "./TransactionSummary";
 
 const getRandomDarkColor = (number) => {
   return `hsl(${number}, 30%, 50%)`;
@@ -41,6 +42,8 @@ const Subscriptions = () => {
   const [transactionCode, setTransactionCode] = useState("");
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [transactionDetails, setTransactionDetails] = useState({});
+  const [isTransactionSummaryOpen, setIsTransactionSummaryOpen] =
+    useState(false);
 
   const toastOptions = {
     autoClose: 400,
@@ -164,20 +167,7 @@ const Subscriptions = () => {
     if (amountPaid < totalAmount) {
       handleError("Insufficient payment amount!");
     } else {
-      if (
-        confirm(
-          "Are you sure all the details are correct before continuing? This action cannot be undone."
-        )
-      ) {
-        try {
-          await createTransaction();
-          setIsReceiptModalOpen(true);
-          console.log(transactionDetails);
-          handleCreateSuccess();
-        } catch (error) {
-          handleError();
-        }
-      }
+      setIsTransactionSummaryOpen(true);
     }
   };
 
@@ -228,6 +218,24 @@ const Subscriptions = () => {
     });
   };
 
+  const handleFinalizeTransaction = async () => {
+    if (
+      confirm(
+        "Are you sure all the details are correct before continuing? This action cannot be undone."
+      )
+    ) {
+      try {
+        await createTransaction();
+        setIsTransactionSummaryOpen(false);
+        setIsReceiptModalOpen(true);
+        console.log(transactionDetails);
+        handleCreateSuccess();
+      } catch (error) {
+        handleError();
+      }
+    }
+  };
+
   const generateTransactionCode = () => {
     const code = Math.random().toString(36).substring(2, 9).toUpperCase();
     setTransactionCode(code);
@@ -242,7 +250,8 @@ const Subscriptions = () => {
         gap={2}
         sx={{
           flexDirection: {
-            sm: "column",
+            xs: "column-reverse",
+            sm: "column-reverse",
             md: "row",
           },
         }}
@@ -255,9 +264,11 @@ const Subscriptions = () => {
             gap={2}
             sx={{
               gridTemplateColumns: {
+                xs: "1fr 1fr",
                 sm: "1fr 1fr",
                 md: "1fr 1fr",
                 lg: "1fr 1fr 1fr",
+                xl: "1fr 1fr 1fr 1fr",
               },
             }}
           >
@@ -340,8 +351,6 @@ const Subscriptions = () => {
         onClose={() => setIsCustomerModalOpen(false)}
       >
         <Box
-          component={"form"}
-          onSubmit={handleCompleteTransaction}
           sx={{
             position: "absolute",
             top: "50%",
@@ -413,10 +422,28 @@ const Subscriptions = () => {
             type="number"
             sx={{ mb: 2 }}
           />
-          <Button variant="contained" color="primary" type="submit" fullWidth>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleCompleteTransaction}
+            fullWidth
+          >
             Complete Transaction
           </Button>
         </Box>
+      </Modal>
+
+      <Modal
+        open={isTransactionSummaryOpen}
+        onClose={() => setIsTransactionSummaryOpen(false)}
+        aria-labelledby="transaction-summary-modal"
+        aria-describedby="transaction-summary-modal-description"
+      >
+        <TransactionSummary
+          transactionDetails={transactionDetails}
+          onClose={() => setIsTransactionSummaryOpen(false)}
+          onProceed={handleFinalizeTransaction}
+        />
       </Modal>
 
       <Modal
