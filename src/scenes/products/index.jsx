@@ -22,6 +22,7 @@ import { AuthContext } from "../../context/AuthContext";
 import axios from "axios";
 import POSReceipt from "./POSReceipt";
 import { useAlert } from "../../context/AlertContext";
+import TransactionSummary from "./TransactionSummary";
 
 const getRandomDarkColor = (number) => {
   // const hue = Math.floor(Math.random() * 360);
@@ -47,6 +48,9 @@ const Products = () => {
   const [transactionDetails, setTransactionDetails] = useState({});
   const [customers, setCustomers] = useState([]); // Added state for customers
   const [colours, setColours] = useState([]);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [isTransactionReceiptModalOpen, setIsTransactionReceiptModalOpen] =
+    useState(false);
 
   useEffect(() => {
     if (!authToken) {
@@ -56,6 +60,10 @@ const Products = () => {
       fetchCustomers();
     }
   }, [authToken, navigate]);
+
+  useEffect(() => {
+    calculateTotalAmount();
+  }, [order]);
 
   const fetchProducts = async () => {
     setIsFetching(true); // Set isFetching to true before fetching
@@ -139,10 +147,6 @@ const Products = () => {
     e.preventDefault();
     setIsCustomerModalOpen(false);
 
-    const totalAmount = order.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
     const change = parseFloat(amountPaid) - totalAmount;
 
     setTransactionDetails({
@@ -156,20 +160,33 @@ const Products = () => {
     if (amountPaid < totalAmount) {
       handleError("Insufficient payment amount!");
     } else {
-      if (
-        confirm(
-          "Are you sure all the details are correct before continuing? This action cannot be undone."
-        )
-      ) {
-        try {
-          await createTransaction();
-          setIsReceiptModalOpen(true);
-          handleCreateSuccess();
-        } catch (error) {
-          handleError();
-        }
+      setIsTransactionReceiptModalOpen(true);
+    }
+  };
+
+  const handleFinalizeTransaction = async () => {
+    if (
+      confirm(
+        "Are you sure all the details are correct before continuing? This action cannot be undone."
+      )
+    ) {
+      try {
+        await createTransaction();
+        setIsTransactionReceiptModalOpen(false);
+        setIsReceiptModalOpen(true);
+        handleCreateSuccess();
+      } catch (error) {
+        handleError();
       }
     }
+  };
+
+  const calculateTotalAmount = () => {
+    const total = order.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    setTotalAmount(total);
   };
 
   const createTransaction = async () => {
@@ -272,6 +289,14 @@ const Products = () => {
           ) : (
             <Typography variant="body1">Your order is empty.</Typography>
           )}
+          <Typography
+            fontSize={"1rem"}
+            marginTop={"0.25rem"}
+            key={"total"}
+            variant="body1"
+          >
+            Total - ₱{totalAmount}
+          </Typography>
         </Box>
 
         {/* Complete Order Button */}
@@ -362,6 +387,14 @@ const Products = () => {
           </Button>
         </Box>
       </Modal>
+
+      {isTransactionReceiptModalOpen && (
+        <TransactionSummary
+          transactionDetails={transactionDetails}
+          onClose={() => setIsTransactionReceiptModalOpen(false)}
+          onProceed={handleFinalizeTransaction}
+        />
+      )}
 
       {/* Receipt Modal */}
       <Modal
