@@ -24,6 +24,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { authToken, login } = useContext(AuthContext);
   const showAlert = useAlert();
@@ -46,6 +47,7 @@ const Login = () => {
   // Handle Login
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const response = await axios.post("http://localhost:8000/api/login", {
         email,
@@ -59,6 +61,7 @@ const Login = () => {
       console.log("Login successful:", data);
       navigate("/dashboard");
       handleSuccess(data.data.fullname);
+      setIsLoading(false);
     } catch (err) {
       // Handle errors
       if (err.response && err.response.data && err.response.data.error) {
@@ -68,6 +71,7 @@ const Login = () => {
       }
       console.error("Login failed:", err);
       handleError();
+      setIsLoading(false);
     }
   };
 
@@ -147,8 +151,9 @@ const Login = () => {
             variant="contained"
             style={btnStyle}
             fullWidth
+            disabled={isLoading}
           >
-            Sign In
+            {isLoading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
         {/* Link to Sign Up Page */}
