@@ -21,6 +21,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -32,21 +33,18 @@ const Dashboard = () => {
   useEffect(() => {
     if (!authToken) {
       navigate("/");
+    } else {
+      fetchDashboardData();
     }
   }, [authToken, navigate]);
 
   const [timeIn, setTimeIn] = useState("");
   const [timeOut, setTimeOut] = useState("");
-  const [activeInstructors, setActiveInstructors] = useState([
-    { name: "Mia Aquino", status: "active", employeeId: "EMP001" },
-    { name: "John Puti", status: "inactive", employeeId: "EMP002" },
-    { name: "Carlo Diaz", status: "active", employeeId: "EMP003" },
-    { name: "Patrick Kalan", status: "active", employeeId: "EMP004" },
-    { name: "Jose De Giba", status: "active", employeeId: "EMP005" },
-  ]);
+  const [activeInstructors, setActiveInstructors] = useState([]);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState("success");
+  const [dashboardData, setDashboardData] = useState([]);
 
   const handleAlertClose = () => {
     setAlertOpen(false);
@@ -55,6 +53,33 @@ const Dashboard = () => {
   const generateEmployeeId = () => {
     // Generate Employee ID based on the current list length
     return `EMP${(activeInstructors.length + 1).toString().padStart(3, "0")}`;
+  };
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/staff/dashboard",
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+      setDashboardData(response.data);
+      const dataResponse = response.data;
+      console.log(response);
+      const instructorList = dataResponse["instructor_list:"].map((item) => ({
+        name: `${item.firstname} ${item.lastname}`,
+        status: item.is_active ? "active" : "inactive",
+        employeeId: `EMP${item.id.toString().padStart(3, "0")}`,
+        contactNo: item.contact_no,
+        email: item.email,
+      }));
+
+      setActiveInstructors(instructorList);
+    } catch (error) {
+      console.error("Error fetching inventory data:", error);
+    }
   };
 
   const handleTimeIn = () => {
@@ -119,20 +144,26 @@ const Dashboard = () => {
       {/* GRID & CHARTS */}
       <Box
         display="grid"
-        gridTemplateColumns="repeat(12, 1fr)"
-        gridAutoRows="140px"
-        gap="20px"
+        gap={2}
+        sx={{
+          maxWidth: "96rem",
+          gridTemplateColumns: {
+            sm: "1fr",
+            md: "repeat(2, 1fr)",
+            lg: "repeat(3, 1fr)",
+          },
+        }}
       >
         {/* ROW 1 */}
         <Box
-          gridColumn="span 3"
           backgroundColor={colors.primary[400]}
           display="flex"
           alignItems="center"
           justifyContent="center"
+          padding={3}
         >
           <StatBox
-            title="49"
+            title={`${dashboardData?.total_equipmen || 0}`}
             subtitle="Equipment"
             progress="0.75"
             increase="+14%"
@@ -144,14 +175,14 @@ const Dashboard = () => {
           />
         </Box>
         <Box
-          gridColumn="span 3"
           backgroundColor={colors.primary[400]}
           display="flex"
           alignItems="center"
           justifyContent="center"
+          padding={3}
         >
           <StatBox
-            title="30"
+            title={`${dashboardData?.total_products || 0}`}
             subtitle="Products"
             progress="0.50"
             increase="+21%"
@@ -163,14 +194,14 @@ const Dashboard = () => {
           />
         </Box>
         <Box
-          gridColumn="span 3"
           backgroundColor={colors.primary[400]}
           display="flex"
           alignItems="center"
           justifyContent="center"
+          padding={3}
         >
           <StatBox
-            title="9"
+            title={`${dashboardData?.total_customers || 0}`}
             subtitle="Customers"
             progress="0.30"
             increase="+5%"
@@ -181,122 +212,71 @@ const Dashboard = () => {
             }
           />
         </Box>
+      </Box>
 
-        {/* ROW 2 */}
+      {/* Instructors Section */}
+      <Box marginTop={"2rem"}>
+        <Typography variant="h3" fontWeight="600">
+          List of Instructors
+        </Typography>
         <Box
-          gridColumn="span 4"
-          gridRow="span 2"
+          display="grid"
+          gap={2}
           backgroundColor={colors.primary[400]}
+          marginTop="0.5rem"
           p="30px"
+          sx={{
+            maxHeight: "500px",
+            maxWidth: "96rem",
+            overflowY: "scroll",
+            gridTemplateColumns: {
+              sm: "1fr",
+              md: "repeat(2, 1fr)",
+              lg: "repeat(3, 1fr)",
+            },
+          }}
         >
-          <Typography variant="h5" fontWeight="600">
-            Employee ID
-          </Typography>
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            mt="25px"
-          >
-            <TextField
-              label="Enter the ID"
-              variant="outlined"
-              value={timeIn}
-              onChange={(e) => setTimeIn(e.target.value)}
-              fullWidth
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleTimeIn}
-              sx={{ mt: 2 }}
+          {activeInstructors.map((instructor, index) => (
+            <Card
+              key={index}
+              sx={{
+                padding: "15px",
+                marginBottom: "10px",
+                backgroundColor: colors.primary[400],
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
             >
-              Submit
-            </Button>
-          </Box>
-        </Box>
-
-        <Box
-          gridColumn="span 4"
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-          p="30px"
-        >
-          <Typography variant="h5" fontWeight="600">
-            Employee ID
-          </Typography>
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            mt="25px"
-          >
-            <TextField
-              label="Enter the ID"
-              variant="outlined"
-              value={timeOut}
-              onChange={(e) => setTimeOut(e.target.value)}
-              fullWidth
-            />
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleTimeOut}
-              sx={{ mt: 2 }}
-            >
-              Submit
-            </Button>
-          </Box>
-        </Box>
-
-        {/* Active Instructors Section */}
-        <Box
-          gridColumn="span 4"
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-          p="30px"
-          sx={{ maxHeight: "400px", overflowY: "scroll" }}
-        >
-          <Typography variant="h5" fontWeight="600">
-            Active Instructors
-          </Typography>
-          <Box mt="20px">
-            {activeInstructors.map((instructor, index) => (
-              <Card
-                key={index}
-                sx={{
-                  padding: "15px",
-                  marginBottom: "10px",
-                  backgroundColor: colors.primary[400],
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
+              <CardContent>
+                <Typography variant="h6">{instructor.name}</Typography>
+                <Typography variant="body2" color="textSecondary">
+                  {instructor.status === "active"
+                    ? "Active Instructor"
+                    : "Inactive Instructor"}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Employee ID: {instructor.employeeId}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Contact Number: {instructor.contactNo}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Email Address: {instructor.email}
+                </Typography>
+              </CardContent>
+              <IconButton
+                onClick={() => toggleInstructorStatus(instructor.name)}
+                color={instructor.status === "active" ? "success" : "error"}
               >
-                <CardContent>
-                  <Typography variant="h6">{instructor.name}</Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    {instructor.status === "active"
-                      ? "Active Instructor"
-                      : "Inactive Instructor"}
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    Employee ID: {instructor.employeeId}
-                  </Typography>
-                </CardContent>
-                <IconButton
-                  onClick={() => toggleInstructorStatus(instructor.name)}
-                  color={instructor.status === "active" ? "success" : "error"}
-                >
-                  {instructor.status === "active" ? (
-                    <CheckCircleIcon />
-                  ) : (
-                    <CancelIcon />
-                  )}
-                </IconButton>
-              </Card>
-            ))}
-          </Box>
+                {instructor.status === "active" ? (
+                  <CheckCircleIcon />
+                ) : (
+                  <CancelIcon />
+                )}
+              </IconButton>
+            </Card>
+          ))}
         </Box>
       </Box>
 
