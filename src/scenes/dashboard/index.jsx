@@ -22,6 +22,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import DashboardSkeleton from "./DashboardSkeleton";
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -45,6 +46,7 @@ const Dashboard = () => {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState("success");
   const [dashboardData, setDashboardData] = useState([]);
+  const [isFetching, setIsFetching] = useState(false);
 
   const handleAlertClose = () => {
     setAlertOpen(false);
@@ -56,6 +58,7 @@ const Dashboard = () => {
   };
 
   const fetchDashboardData = async () => {
+    setIsFetching(true);
     try {
       const response = await axios.get(
         "http://localhost:8000/api/staff/dashboard",
@@ -77,8 +80,10 @@ const Dashboard = () => {
       }));
 
       setActiveInstructors(instructorList);
+      setIsFetching(false);
     } catch (error) {
       console.error("Error fetching inventory data:", error);
+      setIsFetching(false);
     }
   };
 
@@ -135,163 +140,173 @@ const Dashboard = () => {
   };
 
   return (
-    <Box m="20px">
-      {/* HEADER */}
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
-      </Box>
+    <>
+      {isFetching ? (
+        <DashboardSkeleton />
+      ) : (
+        <Box m="20px">
+          {/* HEADER */}
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
+          </Box>
 
-      {/* GRID & CHARTS */}
-      <Box
-        display="grid"
-        gap={2}
-        sx={{
-          maxWidth: "96rem",
-          gridTemplateColumns: {
-            sm: "1fr",
-            md: "repeat(2, 1fr)",
-            lg: "repeat(3, 1fr)",
-          },
-        }}
-      >
-        {/* ROW 1 */}
-        <Box
-          backgroundColor={colors.primary[400]}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          padding={3}
-        >
-          <StatBox
-            title={`${dashboardData?.total_equipmen || 0}`}
-            subtitle="Equipment"
-            progress="0.75"
-            increase="+14%"
-            icon={
-              <FitnessCenterOutlinedIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+          {/* GRID & CHARTS */}
+          <Box
+            display="grid"
+            gap={2}
+            sx={{
+              maxWidth: "96rem",
+              gridTemplateColumns: {
+                sm: "1fr",
+                md: "repeat(2, 1fr)",
+                lg: "repeat(3, 1fr)",
+              },
+            }}
+          >
+            {/* ROW 1 */}
+            <Box
+              backgroundColor={colors.primary[400]}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              padding={3}
+            >
+              <StatBox
+                title={`${dashboardData?.total_equipmen || 0}`}
+                subtitle="Equipment"
+                progress="0.75"
+                increase="+14%"
+                icon={
+                  <FitnessCenterOutlinedIcon
+                    sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+                  />
+                }
               />
-            }
-          />
-        </Box>
-        <Box
-          backgroundColor={colors.primary[400]}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          padding={3}
-        >
-          <StatBox
-            title={`${dashboardData?.total_products || 0}`}
-            subtitle="Products"
-            progress="0.50"
-            increase="+21%"
-            icon={
-              <InventoryOutlinedIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+            </Box>
+            <Box
+              backgroundColor={colors.primary[400]}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              padding={3}
+            >
+              <StatBox
+                title={`${dashboardData?.total_products || 0}`}
+                subtitle="Products"
+                progress="0.50"
+                increase="+21%"
+                icon={
+                  <InventoryOutlinedIcon
+                    sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+                  />
+                }
               />
-            }
-          />
-        </Box>
-        <Box
-          backgroundColor={colors.primary[400]}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          padding={3}
-        >
-          <StatBox
-            title={`${dashboardData?.total_customers || 0}`}
-            subtitle="Customers"
-            progress="0.30"
-            increase="+5%"
-            icon={
-              <PersonAddIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+            </Box>
+            <Box
+              backgroundColor={colors.primary[400]}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              padding={3}
+            >
+              <StatBox
+                title={`${dashboardData?.total_customers || 0}`}
+                subtitle="Customers"
+                progress="0.30"
+                increase="+5%"
+                icon={
+                  <PersonAddIcon
+                    sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+                  />
+                }
               />
-            }
-          />
-        </Box>
-      </Box>
+            </Box>
+          </Box>
 
-      {/* Instructors Section */}
-      <Box marginTop={"2rem"}>
-        <Typography variant="h3" fontWeight="600">
-          List of Instructors
-        </Typography>
-        <Box
-          display="grid"
-          gap={2}
-          backgroundColor={colors.primary[400]}
-          marginTop="0.5rem"
-          p="30px"
-          sx={{
-            maxHeight: "500px",
-            maxWidth: "96rem",
-            overflowY: "scroll",
-            gridTemplateColumns: {
-              sm: "1fr",
-              md: "repeat(2, 1fr)",
-              lg: "repeat(3, 1fr)",
-            },
-          }}
-        >
-          {activeInstructors.map((instructor, index) => (
-            <Card
-              key={index}
+          {/* Instructors Section */}
+          <Box marginTop={"2rem"}>
+            <Typography variant="h3" fontWeight="600">
+              List of Instructors
+            </Typography>
+            <Box
+              display="grid"
+              gap={2}
+              backgroundColor={colors.primary[400]}
+              marginTop="0.5rem"
+              p="30px"
               sx={{
-                padding: "15px",
-                marginBottom: "10px",
-                backgroundColor: colors.primary[400],
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
+                maxHeight: "500px",
+                maxWidth: "96rem",
+                overflowY: "scroll",
+                gridTemplateColumns: {
+                  sm: "1fr",
+                  md: "repeat(2, 1fr)",
+                  lg: "repeat(3, 1fr)",
+                },
               }}
             >
-              <CardContent>
-                <Typography variant="h6">{instructor.name}</Typography>
-                <Typography variant="body2" color="textSecondary">
-                  {instructor.status === "active"
-                    ? "Active Instructor"
-                    : "Inactive Instructor"}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Employee ID: {instructor.employeeId}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Contact Number: {instructor.contactNo}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Email Address: {instructor.email}
-                </Typography>
-              </CardContent>
-              <IconButton
-                onClick={() => toggleInstructorStatus(instructor.name)}
-                color={instructor.status === "active" ? "success" : "error"}
-              >
-                {instructor.status === "active" ? (
-                  <CheckCircleIcon />
-                ) : (
-                  <CancelIcon />
-                )}
-              </IconButton>
-            </Card>
-          ))}
-        </Box>
-      </Box>
+              {activeInstructors.map((instructor, index) => (
+                <Card
+                  key={index}
+                  sx={{
+                    padding: "15px",
+                    marginBottom: "10px",
+                    backgroundColor: colors.primary[400],
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <CardContent>
+                    <Typography variant="h6">{instructor.name}</Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      {instructor.status === "active"
+                        ? "Active Instructor"
+                        : "Inactive Instructor"}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Employee ID: {instructor.employeeId}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Contact Number: {instructor.contactNo}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Email Address: {instructor.email}
+                    </Typography>
+                  </CardContent>
+                  <IconButton
+                    onClick={() => toggleInstructorStatus(instructor.name)}
+                    color={instructor.status === "active" ? "success" : "error"}
+                  >
+                    {instructor.status === "active" ? (
+                      <CheckCircleIcon />
+                    ) : (
+                      <CancelIcon />
+                    )}
+                  </IconButton>
+                </Card>
+              ))}
+            </Box>
+          </Box>
 
-      {/* Snackbar for Alerts */}
-      <Snackbar
-        open={alertOpen}
-        autoHideDuration={2000}
-        onClose={handleAlertClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert onClose={handleAlertClose} severity={alertType}>
-          {alertMessage}
-        </Alert>
-      </Snackbar>
-    </Box>
+          {/* Snackbar for Alerts */}
+          <Snackbar
+            open={alertOpen}
+            autoHideDuration={2000}
+            onClose={handleAlertClose}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Alert onClose={handleAlertClose} severity={alertType}>
+              {alertMessage}
+            </Alert>
+          </Snackbar>
+        </Box>
+      )}
+    </>
   );
 };
 

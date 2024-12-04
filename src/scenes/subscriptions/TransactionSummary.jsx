@@ -111,7 +111,7 @@ const TransactionSummary = ({ transactionDetails, onClose, onProceed }) => {
           <Button variant="contained" color="primary" onClick={onProceed}>
             Proceed
           </Button>
-          <Button variant="outlined" color="primary" onClick={onClose}>
+          <Button variant="outlined" color="error" onClick={onClose}>
             Cancel
           </Button>
         </Box>

@@ -6,6 +6,7 @@ import {
   Typography,
   TextField,
   Autocomplete,
+  Skeleton,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
@@ -17,6 +18,7 @@ import axios from "axios";
 import SubscriptionReceipt from "./SubscriptionReceipt";
 import { useAlert } from "../../context/AlertContext";
 import TransactionSummary from "./TransactionSummary";
+import SubscriptionSkeleton from "./SubscriptionSkeleton";
 
 const getRandomDarkColor = (number) => {
   return `hsl(${number}, 30%, 50%)`;
@@ -44,19 +46,28 @@ const Subscriptions = () => {
   const [transactionDetails, setTransactionDetails] = useState({});
   const [isTransactionSummaryOpen, setIsTransactionSummaryOpen] =
     useState(false);
-
-  const toastOptions = {
-    autoClose: 400,
-    pauseOnHover: true,
-  };
+  const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
-    if (!authToken) navigate("/");
-    fetchServices();
-    fetchCustomers();
-    fetchInstructors();
-    // setServices(servicesData);
+    if (!authToken) {
+      navigate("/");
+    } else {
+      initializeData();
+    }
   }, [authToken, navigate]);
+
+  const initializeData = async () => {
+    setIsFetching(true);
+    try {
+      await fetchServices();
+      await fetchCustomers();
+      await fetchInstructors();
+      setIsFetching(false);
+    } catch (error) {
+      console.error(error);
+      setIsFetching(false);
+    }
+  };
 
   useEffect(() => {
     calculateTotalAmount();
@@ -245,105 +256,116 @@ const Subscriptions = () => {
     <Box m="20px">
       <Header title="Subscriptions" subtitle="Manage customer subscriptions" />
 
-      <Box
-        display="flex"
-        gap={2}
-        sx={{
-          flexDirection: {
-            xs: "column-reverse",
-            sm: "column-reverse",
-            md: "row",
-          },
-        }}
-      >
-        {/* Services List */}
-        <Box flex={1}>
-          <Typography variant="h6">Available Services</Typography>
-          <Box
-            display="grid"
-            gap={2}
-            sx={{
-              gridTemplateColumns: {
-                xs: "1fr 1fr",
-                sm: "1fr 1fr",
-                md: "1fr 1fr",
-                lg: "1fr 1fr 1fr",
-                xl: "1fr 1fr 1fr 1fr",
-              },
-            }}
-          >
-            {services.map((service, index) => (
-              <Box
-                key={service.id}
-                sx={{
-                  backgroundColor: colours[index],
-                  cursor: cart.some((item) => item.exercise_id === service.id)
-                    ? "default"
-                    : "pointer",
-                  color: "white",
-                  opacity: cart.some((item) => item.exercise_id === service.id)
-                    ? "50%"
-                    : "100%",
-                }}
-                p={2}
-                border="1px solid #ddd"
-                borderRadius="8px"
-                onClick={() => addServiceToCart(service)}
-              >
-                <Typography variant="subtitle1">{service.name}</Typography>
-                <Typography variant="body2">₱{service.price}</Typography>
-              </Box>
-            ))}
+      {isFetching ? (
+        // Skeleton Loader
+        <SubscriptionSkeleton />
+      ) : (
+        <Box
+          display="flex"
+          gap={2}
+          sx={{
+            flexDirection: {
+              xs: "column-reverse",
+              sm: "column-reverse",
+              md: "row",
+            },
+          }}
+        >
+          {/* Services List */}
+          <Box flex={1}>
+            <Typography marginBottom={"0.5rem"} variant="h6">
+              Available Services
+            </Typography>
+            <Box
+              display="grid"
+              gap={2}
+              sx={{
+                gridTemplateColumns: {
+                  xs: "1fr 1fr",
+                  sm: "1fr 1fr",
+                  md: "1fr 1fr",
+                  lg: "1fr 1fr 1fr",
+                  xl: "1fr 1fr 1fr 1fr",
+                },
+              }}
+            >
+              {services.map((service, index) => (
+                <Box
+                  key={service.id}
+                  sx={{
+                    backgroundColor: colours[index],
+                    cursor: cart.some((item) => item.exercise_id === service.id)
+                      ? "default"
+                      : "pointer",
+                    color: "white",
+                    opacity: cart.some(
+                      (item) => item.exercise_id === service.id
+                    )
+                      ? "50%"
+                      : "100%",
+                  }}
+                  p={2}
+                  border="1px solid #ddd"
+                  borderRadius="8px"
+                  onClick={() => addServiceToCart(service)}
+                >
+                  <Typography variant="subtitle1">{service.name}</Typography>
+                  <Typography variant="body2">₱{service.price}</Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+
+          {/* Cart */}
+          <Box flex={1}>
+            <Typography marginBottom={"0.5rem"} variant="h6">
+              Cart
+            </Typography>
+            <div className="table-responsive bg-dark">
+              <table className="table table-responsive table-dark table-hover">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cart.map((item) => (
+                    <tr key={item.id}>
+                      <td>{item.name}</td>
+                      <td>₱{item.price}</td>
+                      <td>
+                        <Button
+                          variant="contained"
+                          color="error"
+                          size="small"
+                          onClick={() => removeServiceFromCart(item.id)}
+                        >
+                          Remove
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <Typography variant="h6" mt={2}>
+              Total: ₱{totalAmount}
+            </Typography>
+            <Button
+              variant="contained"
+              color="info"
+              onClick={handlePayNow}
+              disabled={cart.length === 0}
+              style={{ marginTop: "16px" }}
+              // className="bg-dark"
+            >
+              Pay Now
+            </Button>
           </Box>
         </Box>
-
-        {/* Cart */}
-        <Box flex={1}>
-          <Typography variant="h6">Cart</Typography>
-          <div className="table-responsive bg-dark">
-            <table className="table table-responsive table-dark table-hover">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Price</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cart.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.name}</td>
-                    <td>₱{item.price}</td>
-                    <td>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        size="small"
-                        onClick={() => removeServiceFromCart(item.id)}
-                      >
-                        Remove
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <Typography variant="h6" mt={2}>
-            Total: ₱{totalAmount}
-          </Typography>
-          <Button
-            variant="contained"
-            color="info"
-            onClick={handlePayNow}
-            disabled={cart.length === 0}
-            style={{ marginTop: "16px" }}
-            // className="bg-dark"
-          >
-            Pay Now
-          </Button>
-        </Box>
-      </Box>
+      )}
 
       {/* Other Information Modal */}
       <Modal
