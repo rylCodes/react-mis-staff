@@ -236,13 +236,13 @@ const Sidebar = () => {
               </div>
             )}
 
-            <Item
+            {/* <Item
               title="Profile"
               to="/profile"
               icon={<AccountBoxIcon />}
               selected={selected === "/profile"}
               setSelected={() => handleSelect("Profile", "/profile")}
-            />
+            /> */}
           </Box>
         </Menu>
       </ProSidebarProvider>
