@@ -179,11 +179,7 @@ const CustomerList = () => {
           password: "", // empty password
         };
 
-        setCustomer((prevCustomer) =>
-          prevCustomer.map((c) =>
-            c.id === selectedCustomer.id ? updatedCustomer : c
-          )
-        );
+        fetchClients();
         handleUpdateClose();
         setIsLoading(false);
         handleUpdateSuccess();
@@ -336,7 +332,7 @@ const CustomerList = () => {
                     })
                   }
                 />
-                <TextField
+                {/* <TextField
                   fullWidth
                   label="Password"
                   margin="normal"
@@ -348,7 +344,7 @@ const CustomerList = () => {
                       password: e.target.value,
                     })
                   }
-                />
+                /> */}
                 <TextField
                   fullWidth
                   label="Address"
