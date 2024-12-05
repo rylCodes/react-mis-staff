@@ -28,7 +28,7 @@ const EmployeeAttendance = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
-  const { authToken } = useContext(AuthContext);
+  const { authToken, userId } = useContext(AuthContext);
   const showAlert = useAlert();
   const navigate = useNavigate();
 
@@ -43,6 +43,7 @@ const EmployeeAttendance = () => {
   const [employeesAttendance, setEmployeesAttendance] = useState([]);
   const [selectedAttendance, setSelectedAttendance] = useState(null);
   const [newAttendanceStatus, setNewAttendanceStatus] = useState("");
+  const [isFetching, setIsFetching] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -54,6 +55,7 @@ const EmployeeAttendance = () => {
   }, [authToken, navigate]);
 
   const fetchAttendanceData = async () => {
+    setIsFetching(true);
     try {
       const response = await axios.get(
         "http://localhost:8000/api/staff/attendance-lists",
@@ -63,16 +65,20 @@ const EmployeeAttendance = () => {
           },
         }
       );
-      const formattedData = response.data.data.map((attendance) => ({
-        id: attendance.id,
-        name: attendance.name,
-        date: attendance.date,
-        attendance: attendance.status,
-      }));
+      const formattedData = response.data.data
+        .filter((data) => data.id === userId)
+        .map((attendance) => ({
+          id: attendance.id,
+          name: attendance.name,
+          date: attendance.date,
+          attendance: attendance.status,
+        }));
       setEmployeesAttendance(formattedData);
       console.log(response.data);
+      setIsFetching(false);
     } catch (error) {
       console.error("Failed to fetch attendance data:", error);
+      setIsFetching(false);
     }
   };
 
@@ -152,6 +158,7 @@ const EmployeeAttendance = () => {
           checkboxSelection
           rows={employeesAttendance}
           columns={columns}
+          loading={isFetching}
         />
       </Box>
     </Box>

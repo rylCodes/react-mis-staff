@@ -57,7 +57,7 @@ const Login = () => {
 
       const { data } = response;
       // Handle successful login, save the token and redirect
-      login(data.meta.access_token); // Save token via context
+      login(data.meta.access_token, data.data.id);
       console.log("Login successful:", data);
       navigate("/dashboard");
       handleSuccess(data.data.name);
